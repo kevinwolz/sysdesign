@@ -1,7 +1,9 @@
 #' Create a Nelder Fan experimental design
 #' @description Creates a Nelder Fan experimental design.
 #' @details The Nelder Fan or Nelder Wheel experimental design (Nelder 1962) is an experimental design that systematically
-#' varies plant desnity within a single plot. The terminology and calculations used here follow Parrott, Brinks, and Lhotka (2012).
+#' varies plant desnity within a single plot. This function creates Nelder Fan Type Ia (Nelder 1962), where the growing area
+#' around each plant has a constant shape throughout the design but increases as radius increases.
+#' The terminology and calculations used here follow Parrott, Brinks, and Lhotka (2012).
 #' @return An object of class "sysd" and class "nelder". This is a list of 3 elements:
 #' \itemize{
 #'  \item{"plants"}{ - A data frame (tibble) containing one row for each for each plant in the design.}
