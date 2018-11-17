@@ -12,8 +12,8 @@
 #' @import ggplot2
 #' @family plot functions
 #' @examples
-#' data <- nelder(D1         = 3000,
-#'                DN         = 1000,
+#' data <- nelder(DN         = 1000,
+#'                D1         = 3000,
 #'                N          = 5,
 #'                tau        = 1,
 #'                even       = TRUE,
