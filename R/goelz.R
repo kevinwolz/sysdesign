@@ -1,7 +1,9 @@
 
-create_goelz <- function(N = 35, reps = 1, split = FALSE) {
+create_goelz <- function(N     = 35,
+                         reps  = 1,
+                         split = FALSE) {
 
-  L       <- seq(from = 0, to = 100, length.out = N)
+  L <- seq(from = 0, to = 100, length.out = N)
   SPECIES <- 1:3
 
   triangle <- expand.grid(x = L, y = L, z = L) %>%
@@ -15,29 +17,32 @@ create_goelz <- function(N = 35, reps = 1, split = FALSE) {
     dplyr::mutate(y.field = sqrt(3) / 2 * (y.pos - 1)) %>%
     dplyr::group_by(y.pos) %>%
     dplyr::mutate(x.pos = match(z, L)) %>%
-    dplyr::mutate(x.field = x.pos + 0.5 * (y.pos - 1)) %>%
+    dplyr::mutate(x.field = x.pos + 0.5 * (y.pos - 1) - 1) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(border = FALSE)
 
   A <- triangle %>%
     dplyr::filter(x > 35 & y < 35) %>%
     dplyr::arrange(y, z) %>%
-    dplyr::mutate(trident = "A") %>%
-    dplyr::mutate(trident.id = 1:nrow(.))
+    dplyr::mutate(zone = "A") %>%
+    dplyr::mutate(zone.id = 1:nrow(.))
 
   B <- triangle %>%
     dplyr::filter(y > 35 & z < 35) %>%
     dplyr::arrange(z, x) %>%
-    dplyr::mutate(trident = "B") %>%
-    dplyr::mutate(trident.id = 1:nrow(.))
+    dplyr::mutate(zone = "B") %>%
+    dplyr::mutate(zone.id = 1:nrow(.))
 
   C <- triangle %>%
     dplyr::filter(z > 35 & x < 35) %>%
     dplyr::arrange(x, y) %>%
-    dplyr::mutate(trident = "C") %>%
-    dplyr::mutate(trident.id = 1:nrow(.))
+    dplyr::mutate(zone = "C") %>%
+    dplyr::mutate(zone.id = 1:nrow(.))
 
-  triangle <- dplyr::bind_rows(A, B, C)
+  triangle <- dplyr::bind_rows(A, B, C) %>%
+    dplyr::mutate(zone = factor(zone, levels = c("A", "B", "C"))) %>%
+    dplyr::arrange(y.pos, x.pos) %>%
+    dplyr::select(id, x.pos, y.pos, x.field, y.field, zone, zone.id, x, y, z, border)
 
   init_species <- function(x, y, z) {
     OUT <- NULL
@@ -48,13 +53,12 @@ create_goelz <- function(N = 35, reps = 1, split = FALSE) {
     return(OUT)
   }
 
-  out <- list()
-  A.out <- list()
+  out <- OUT <- A.out <- list()
   index <- 1
   if(split) {
     while(index <= reps) {
       A.design <- triangle %>%
-        dplyr::filter(trident == "A") %>%
+        dplyr::filter(zone == "A") %>%
         dplyr::mutate(species = init_species(x, y, z)) %>%
         .$species
 
@@ -65,40 +69,41 @@ create_goelz <- function(N = 35, reps = 1, split = FALSE) {
       A.out <- c(A.out, list(A.design))
       index <- index + 1
     }
-    out <- list(triangle = triangle, design = out, A.design = A.out)
+    OUT <- list(triangle = triangle, design = out, A.design = A.out)
   } else {
     while(index <= reps) {
       A.design <- triangle %>%
-        dplyr::filter(trident == "A") %>%
-        dplyr::mutate(species = init_species(x, y, z))
-
-      B.design <- triangle %>%
-        dplyr::filter(trident == "B") %>%
-        dplyr::mutate(species = add_one(A.design$species))
-
-      C.design <- triangle %>%
-        dplyr::filter(trident == "C") %>%
-        dplyr::mutate(species = add_one(B.design$species))
-
-      out <- c(out, list(dplyr::bind_rows(A.design, B.design, C.design)))
+        dplyr::filter(zone == "A")
+      out <- A_to_triangle(triangle  = triangle,
+                           A.species = init_species(A.design$x, A.design$y, A.design$z))
+        out[[1]] <- out[[1]] %>% dplyr::select(id, x.pos, y.pos, x.field, y.field, species, zone, zone.id, x, y, z, border)
+      OUT <- c(OUT, out)
       index <- index + 1
     }
   }
 
-  return(out)
+  return(OUT)
 }
 
 add_goelz_border <- function(goelz, n) {
-  i <- 0
-  while(i < n) {
+
+  resample <- function(x, ...) x[sample.int(length(x), ...)]
+
+  goelz <- goelz %>%
+    dplyr::mutate(zone = as.character(zone))
+
+  ## CREATE BORDER LOCATIONS
+  border.max <- 0
+  border.row <- 1
+  while(border.row <= n) {
     bottom.start <- goelz %>%
       dplyr::filter(y.pos == min(y.pos)) %>%
-      dplyr::select(x.pos, y.pos, x.field, y.field, trident, species) %>%
-      dplyr::mutate(trident = "buffer-bottom") %>%
+      dplyr::select(x.pos, y.pos, x.field, y.field, zone, species) %>%
+      dplyr::mutate(zone    = "border-bottom") %>%
       dplyr::mutate(x.field = x.field - 1.5) %>%
       dplyr::mutate(y.field = y.field - (sqrt(3) / 2)) %>%
-      dplyr::mutate(x.pos   = x.pos - 1) %>%
-      dplyr::mutate(y.pos   = y.pos - 1)
+      dplyr::mutate(x.pos   = x.pos   - 1) %>%
+      dplyr::mutate(y.pos   = y.pos   - 1)
 
     bottom.end <- bottom.start %>%
       dplyr::arrange(x.pos) %>%
@@ -106,70 +111,120 @@ add_goelz_border <- function(goelz, n) {
       dplyr::mutate(x.field = x.field + 2) %>%
       dplyr::mutate(x.pos   = x.pos   + 2)
 
-    bottom <- dplyr::bind_rows(bottom.start, bottom.end) %>%
-      dplyr::mutate(border = TRUE)
+    bottom.full <- dplyr::bind_rows(bottom.start, bottom.end) %>%
+      dplyr::arrange(x.pos) %>%
+      dplyr::mutate(border     = TRUE) %>%
+      dplyr::mutate(border.num = border.row) %>%
+      dplyr::mutate(zone.id    = 1:nrow(.) + border.max) %>%
+      dplyr::arrange(zone.id)
 
+    for(i in 1:nrow(bottom.full)) {
+      x.search <- bottom.full$x.pos[i] + c(-1, 0)
+      y.search <- bottom.full$y.pos[i] + 1
+
+      search.window <- goelz %>%
+        dplyr::filter(x.pos %in% x.search & y.pos %in% y.search)
+
+      if(nrow(search.window) != 0) {
+        bottom.full$species[i] <- resample(search.window$species, 1)
+      }
+    }
 
     left.start <- goelz %>%
       dplyr::filter(x.pos == min(x.pos)) %>%
-      dplyr::select(x.pos, y.pos, x.field, y.field, trident, species) %>%
-      dplyr::mutate(trident = "buffer-left") %>%
+      dplyr::select(x.pos, y.pos, x.field, y.field, zone, species) %>%
+      dplyr::mutate(zone    = "border-left") %>%
       dplyr::mutate(x.field = x.field - 1) %>%
-      dplyr::mutate(x.pos = x.pos - 1)
+      dplyr::mutate(x.pos   = x.pos   - 1)
 
     left.end <- left.start %>%
-      dplyr::arrange(y.pos) %>%
-      tail(2) %>%
+      dplyr::arrange(dplyr::desc(y.pos)) %>%
+      head(2) %>%
       dplyr::mutate(x.field = x.field + 1.0) %>%
       dplyr::mutate(y.field = y.field + 2 * (sqrt(3) / 2)) %>%
-      dplyr::mutate(y.pos = y.pos + 2)
+      dplyr::mutate(y.pos   = y.pos   + 2)
 
-    left <- dplyr::bind_rows(left.start, left.end) %>%
-      dplyr::mutate(border = TRUE)
+    left.full <- dplyr::bind_rows(left.start, left.end) %>%
+      dplyr::arrange(dplyr::desc(y.pos)) %>%
+      dplyr::mutate(border     = TRUE) %>%
+      dplyr::mutate(border.num = border.row) %>%
+      dplyr::mutate(zone.id    = 1:nrow(.) + border.max) %>%
+      dplyr::arrange(zone.id)
 
+    left.full$species <- add_one(bottom.full$species)
 
     right.start <- goelz %>%
       dplyr::group_by(y.pos) %>%
       dplyr::filter(x.pos == max(x.pos)) %>%
       dplyr::ungroup() %>%
-      dplyr::select(x.pos, y.pos, x.field, y.field, trident, species) %>%
-      dplyr::mutate(trident = "buffer-right") %>%
+      dplyr::select(x.pos, y.pos, x.field, y.field, zone, species) %>%
+      dplyr::mutate(zone    = "border-right") %>%
       dplyr::mutate(x.field = x.field + 0.5) %>%
-      #dplyr::mutate(x.pos = x.pos + 1) %>%
       dplyr::mutate(y.field = y.field + (sqrt(3) / 2)) %>%
-      dplyr::mutate(y.pos = y.pos + 1)
+      dplyr::mutate(y.pos   = y.pos   + 1)
 
     right.end <- right.start %>%
-      dplyr::arrange(dplyr::desc(y.pos)) %>%
-      tail(2) %>%
+      dplyr::arrange(y.pos) %>%
+      head(2) %>%
       dplyr::mutate(x.field = x.field + 1) %>%
-      dplyr::mutate(x.pos = x.pos + 2) %>%
+      dplyr::mutate(x.pos   = x.pos   + 2) %>%
       dplyr::mutate(y.field = y.field - 2 * (sqrt(3) / 2)) %>%
-      dplyr::mutate(y.pos = y.pos - 2)
+      dplyr::mutate(y.pos   = y.pos   - 2)
 
-    right <- dplyr::bind_rows(right.start, right.end) %>%
-      dplyr::mutate(border = TRUE)
+    right.full <- dplyr::bind_rows(right.start, right.end) %>%
+      dplyr::arrange(y.pos) %>%
+      dplyr::mutate(border     = TRUE) %>%
+      dplyr::mutate(border.num = border.row) %>%
+      dplyr::mutate(zone.id    = 1:nrow(.) + border.max) %>%
+      dplyr::arrange(zone.id)
 
-    goelz <- dplyr::bind_rows(goelz, bottom, left, right)
-    i <- i + 1
+    right.full$species <- add_one(left.full$species)
+
+    goelz <- dplyr::bind_rows(goelz,
+                              bottom.full,
+                              left.full,
+                              right.full)
+
+    border.row <- border.row + 1
+    border.max <- border.max + nrow(bottom.full)
   }
+
+  goelz <- goelz %>%
+    dplyr::mutate(x.pos = x.pos + n) %>%
+    dplyr::mutate(y.pos = y.pos + n) %>%
+    dplyr::mutate(x.field = x.field + abs(min(x.field))) %>%
+    dplyr::mutate(y.field = y.field + abs(min(y.field))) %>%
+    dplyr::mutate(zone = factor(zone, levels = c("A", "B", "C", "border-bottom", "border-left", "border-right"))) %>%
+    dplyr::arrange(y.pos, x.pos)
 
   return(goelz)
 }
 
 plot_goelz <- function(data,
-                       species.colors = c("black", "white", "red"),
-                       border.colors  = c("black", "green")){
-  out <- ggplot(data, aes(x     = x.field,
-                          y     = y.field,
-                          fill  = factor(species),
-                          color = border)) +
-    labs(fill = "Species", color = "Border") +
-    geom_point(size = 4, shape = 21) +
-    scale_fill_manual(values  = species.colors) +
-    scale_color_manual(values = border.colors) +
+                       fill   = "species",
+                       color  = "border",
+                       label  = "none",
+                       fill.palette  = c("grey50", "white", "#E69F00", "#56B4E9",
+                                         "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"),
+                       color.palette = c("black", "green", "red", "blue", "orange", "purple"),
+                       corners = FALSE,
+                       sides   = FALSE){
+
+  data$species <- factor(data$species)
+
+  out <- ggplot(data, aes_string(x = "x.field", y = "y.field")) +
+    geom_point(size = 4,
+               shape = 21,
+               aes_string(fill  = fill, color = color)) +
+    scale_fill_manual(values  = fill.palette) +
+    scale_color_manual(values = color.palette) +
     theme_void() +
     coord_equal()
+
+  if(label != "none") out <- out + geom_text(aes_string(label = label))
+
+  if(corners) out <- out + geom_point(data = goelz_corners(data), color = "red", shape = 4, size = 2)
+  if(sides)   out <- out + geom_point(data = goelz_sides(data),   color = "red", shape = 3, size = 1)
 
   # ggtern(g, aes(x = x, y = y, z = z, fill = factor(species))) +
   #   geom_point(size = 2, shape = 21) +
@@ -285,7 +340,7 @@ optim_goelz <- function(N        = 35,
 
 goelz_fitness <- function(design, triangle) {
   design <- triangle %>%
-    dplyr::filter(trident == "A") %>%
+    dplyr::filter(zone == "A") %>%
     dplyr::mutate(species = design)
   N <- length(unique(triangle$x))
   L <- seq(from = 0, to = 100, length.out = N)
@@ -346,12 +401,12 @@ compile_pop <- function(pop, fit, triangle, GEN) {
     purrr::map(matrix, ncol = 1) %>%
     purrr::map(dplyr::as_tibble) %>%
     purrr::map(setNames, nm = "species") %>%
-    purrr::map(bind_triangle, tri = dplyr::filter(triangle, trident == "A")) %>%
+    purrr::map(bind_triangle, tri = dplyr::filter(triangle, zone == "A")) %>%
     dplyr::bind_rows() %>%
-    dplyr::mutate(orig.gen = rep(orig.gen$orig.gen, each = nrow(dplyr::filter(triangle, trident == "A")))) %>%
-    dplyr::mutate(gen.id = rep(gen.id$gen.id, each = nrow(dplyr::filter(triangle, trident == "A")))) %>%
+    dplyr::mutate(orig.gen = rep(orig.gen$orig.gen, each = nrow(dplyr::filter(triangle, zone == "A")))) %>%
+    dplyr::mutate(gen.id = rep(gen.id$gen.id, each = nrow(dplyr::filter(triangle, zone == "A")))) %>%
     dplyr::mutate(gen = GEN) %>%
-    dplyr::select(gen, orig.gen, gen.id, trident, trident.id, id, x, y, z, species)
+    dplyr::select(gen, orig.gen, gen.id, zone, zone.id, id, x, y, z, species)
 
   return(list(stats = stats, data = data))
 }
@@ -362,4 +417,126 @@ add_one <- function(x) {
   x[x == 1] <- 2
   x[x == 4] <- 1
   return(x)
+}
+
+A_to_triangle <- function(triangle, A.species) {
+  A.design <- triangle %>%
+    dplyr::filter(zone == "A") %>%
+    dplyr::arrange(zone.id) %>%
+    dplyr::mutate(species = A.species)
+
+  B.design <- triangle %>%
+    dplyr::filter(zone == "B") %>%
+    dplyr::arrange(zone.id) %>%
+    dplyr::mutate(species = add_one(A.design$species))
+
+  C.design <- triangle %>%
+    dplyr::filter(zone == "C") %>%
+    dplyr::arrange(zone.id) %>%
+    dplyr::mutate(species = add_one(B.design$species))
+
+  return(list(dplyr::bind_rows(A.design, B.design, C.design)))
+}
+
+mirror_right <- function(goelz, remove.joining.border = FALSE) {
+
+  # Create & rotate second triangle
+  goelz.mirrored <- goelz
+
+  theta <- -pi / 3
+  x.field.new <- goelz$x.field * cos(theta) - goelz$y.field * sin(theta) + max(goelz$x.field) / 2 + 1
+  x.field.new <- x.field.new - 2 * (x.field.new - mean(x.field.new))
+  y.field.new <- goelz$y.field * cos(theta) + goelz$x.field * sin(theta) + max(goelz$y.field)
+
+  goelz.mirrored$x.pos   <- -goelz$y.pos + max(goelz$x.pos) + 2
+  goelz.mirrored$y.pos   <- -goelz$x.pos + max(goelz$y.pos) + 1
+  goelz.mirrored$x.field <- x.field.new
+  goelz.mirrored$y.field <- y.field.new
+
+  # Modify border rows if any
+  if(remove.joining.border & any(goelz$border)) {
+    n.borders <- goelz %>%
+      dplyr::filter(zone == "border-right") %>%
+      .$border.num %>%
+      max()
+
+    goelz <- goelz %>%
+      dplyr::filter(zone != "border-right") %>% # Remove "right" border
+      dplyr::group_by(zone, border.num)
+
+    goelz.mirrored <- goelz.mirrored %>%
+      dplyr::filter(zone != "border-right") %>% # Remove "right" border
+      dplyr::group_by(zone, border.num)
+
+    # Remove stray border individuals from left and bottom borders
+    for(i in 1:n.borders) {
+      for(count in 1:i) {
+        goelz <- goelz %>%
+          dplyr::filter(!(zone == "border-left" & border.num == i & y.pos == max(y.pos)))
+
+        goelz.mirrored <- goelz.mirrored %>%
+          dplyr::filter(!(zone == "border-left" & border.num == i & x.pos == min(x.pos)))
+      }
+      if(i > 1) {
+        for(count in 1:(i-1)) {
+          goelz <- goelz %>%
+            dplyr::filter(!(zone == "border-bottom" & border.num == i & x.pos == max(x.pos)))
+
+          goelz.mirrored <- goelz.mirrored %>%
+            dplyr::filter(!(zone == "border-bottom" & border.num == i & y.pos == min(y.pos)))
+        }
+      }
+    }
+
+    goelz <- goelz %>%
+      dplyr::ungroup()
+
+    goelz.mirrored <- goelz.mirrored %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(x.pos   = x.pos - n.borders) %>%
+      dplyr::mutate(y.pos   = y.pos - n.borders) %>%
+      dplyr::mutate(x.field = x.field - n.borders * 1.5) %>%
+      dplyr::mutate(y.field = y.field - n.borders * sqrt(3) / 2)
+  }
+
+  # Remove edge row from mirrored triangle so it does not repeat
+  goelz.mirrored <- goelz.mirrored %>%
+    dplyr::mutate(triangle = "B") %>%
+    dplyr::group_by(y.pos) %>%
+    dplyr::filter(x.pos != min(x.pos)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(x.pos   = x.pos - 1) %>%
+    dplyr::mutate(x.field = x.field - 1)
+
+  goelz.combine <- goelz %>%
+    dplyr::mutate(triangle = "A") %>%
+    dplyr::bind_rows(goelz.mirrored) %>% # Combine two triangles
+    dplyr::arrange(y.pos, x.pos) %>% # Reassign ids
+    dplyr::mutate(id = 1:nrow(.))
+
+  return(goelz.combine)
+}
+
+goelz_corners <- function(goelz) {
+  x.range <- range(round(goelz$x.field, 2))
+  y.range <- range(round(goelz$y.field, 2))
+  out <- expand.grid(x.field = x.range, y.field = y.range) %>%
+    dplyr::arrange(x.field, y.field)
+  return(out)
+}
+
+goelz_sides <- function(goelz) {
+  x.range  <- range(round(goelz$x.field, 2))
+  y.unique <- unique(round(goelz$y.field, 2))
+  out <- expand.grid(x.field = x.range, y.field = y.unique) %>%
+    dplyr::arrange(x.field, y.field)
+  return(out)
+}
+
+goelz_starts <- function(goelz) {
+  out <- goelz %>%
+    dplyr::filter(x.pos == 1) %>%
+    dplyr::select(x.pos, y.pos, x.field, y.field) %>%
+    dplyr::mutate(y.field = round(y.field, 2))
+  return(out)
 }
