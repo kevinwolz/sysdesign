@@ -3,7 +3,7 @@
 #' @return A ggplot2 object.
 #' @param data An object of class 'nelder' created via \code{\link{nelder}}.
 #' @param size A numeric value indicating point size.
-#' @param fill.colors A character vector of length 2 indicating the fill colors of experimental and border plants, respectively.
+#' @param fill.palette A character vector of length 2 indicating the fill colors of experimental and border plants, respectively.
 #' @param legend Logical indicating whether or not to include a legend for fill colors.
 #' @param ex.area Logical indicating whether or not and example growing area of one plant should be shown.
 #' @param caption Logical indicating whether or not to include a caption with generic data about the design.
@@ -12,25 +12,27 @@
 #' @import ggplot2
 #' @family plot functions
 #' @examples
-#' data <- nelder(DN         = 1000,
-#'                D1         = 3000,
-#'                N          = 5,
-#'                tau        = 1,
-#'                even       = TRUE,
-#'                max.angle  = 360)
-#' plot_nelder(data)
+#' dat <- nelder(DN         = 1000,
+#'               D1         = 3000,
+#'               N          = 5,
+#'               tau        = 1,
+#'               even       = TRUE,
+#'               max.angle  = 360)
+#' plot_nelder(data = dat)
 plot_nelder <- function(data,
-                        size        = 3,
-                        fill.colors = c("black", "white"),
-                        legend      = FALSE,
-                        ex.area     = FALSE,
-                        caption     = FALSE) {
+                        size         = 3,
+                        fill.palette = c("black", "white"),
+                        legend       = FALSE,
+                        ex.area      = FALSE,
+                        caption      = FALSE) {
 
-  if(!("nelder" %in% class(data)))                            stop("data must be of class 'nelder'",                     call. = FALSE)
-  if(!(is.numeric(size) & length(size) == 1))                 stop("size must be numeric and of length 1",               call. = FALSE)
-  if(!(is.character(fill.colors) & length(fill.colors) == 2)) stop("fill.colors must be a character vector of length 2", call. = FALSE)
-  if(!is.logical(ex.area))                                    stop("ex.area must be a logical",                          call. = FALSE)
-  if(!is.logical(caption))                                    stop("caption must be a logical",                          call. = FALSE)
+  if(!("nelder" %in% class(data)))            stop("data must be of class 'nelder'",                      call. = FALSE)
+  if(!(is.numeric(size) & length(size) == 1)) stop("size must be numeric and of length 1",                call. = FALSE)
+  if(!(is.character(fill.palette) &
+       length(fill.palette) == 2))            stop("fill.palette must be a character vector of length 2", call. = FALSE)
+  if(!is.logical(ex.area))                    stop("ex.area must be a logical",                           call. = FALSE)
+  if(!is.logical(caption))                    stop("caption must be a logical",                           call. = FALSE)
+  if(!is.logical(legend))                     stop("legend must be a logical",                            call. = FALSE)
 
   plot.caption <- NULL
   if(caption) {
@@ -39,7 +41,7 @@ plot_nelder <- function(data,
                            "\n# Angle: ",       round(data$plot$angle, 2),  " degrees",
                            "\n# Plants: ",      data$plot$plants, " (", data$plot$exp.plants, ")",
                            "\nDensity range: ", round(data$plot$min.density), " - ", data$plot$max.density, " plants/ha",
-                           "\nr0-rmax: ",       round(data$plot$r0, 2),       " - ", round(data$plot$rmax, 2), " m",
+                           "\nr0-rmax: ",       round(data$plot$r0,   2),     " - ", round(data$plot$rmax, 2), " m",
                            "\nPlot area: ",     round(data$plot$area, 2), " ha")
   }
 
@@ -62,7 +64,7 @@ plot_nelder <- function(data,
   plot.obj <- ggplot(data$plants) +
     area.geom +
     geom_point(aes(x = r, y = theta, fill = exp), shape = 21, size = size) +
-    scale_fill_manual(values = fill.colors) +
+    scale_fill_manual(values = fill.palette) +
     lims(x = c(0, NA),
          y = c(0, 360)) +
     coord_polar(theta = "y", start = -pi / 2, direction = -1) +
@@ -71,6 +73,82 @@ plot_nelder <- function(data,
     theme(plot.caption    = element_text(size = 20, hjust = 0),
           legend.position = ifelse(legend, "bottom", "none"),
           legend.text     = element_text(size = 18))
+
+  return(plot.obj)
+}
+
+#' Plot a Goelz Triangle experimental design
+#' @description Plots a Goelz Triangle experimental design.
+#' @return A ggplot2 object.
+#' @param data An object of class 'goelz' created via \code{\link{goelz}}.
+#' @param size A numeric value indicating point size.
+#' @param fill One of "species", "zone", or "border", indicating the column of \code{data} that specifies the point fill color.
+#' @param color One of "species", "zone", or "border", indicating the column of \code{data} that specifies the point border color.
+#' Use "none" for no variation in point borders.
+#' @param label A character string indicating the column name of \code{data} to use for labels on each point.
+#' Use "none" for no labels.
+#' @param fill.palette A character vector indicating the color palette of used for point fill.
+#' @param color.palette A character vector indicating the color palette of used for point borders.
+#' @param corners Logical indicating whether or not to plot red X's at each corner of the rectangle containing the design.
+#' @param guides Logical indicating whether or not to plot red +'s as guides at the extremes of each row in the design.
+#' @param legend Logical indicating whether or not to include a legend for fill and color values.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @export
+#' @import ggplot2
+#' @family plot functions
+#' @examples
+#' dat <- goelz(N = 35, reps = 1, split = FALSE)
+#' plot_goelz(data = dat)
+plot_goelz <- function(data,
+                       size    = 4,
+                       fill    = "species",
+                       color   = "border",
+                       label   = "none",
+                       fill.palette  = c("grey50", "white", "#E69F00", "#56B4E9",
+                                         "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"),
+                       color.palette = c("black", "green", "red", "blue", "orange", "purple"),
+                       corners = FALSE,
+                       guides  = FALSE,
+                       legend  = TRUE){
+
+  allowed.cols <- c("species", "zone", "border")
+  if(!("goelz" %in% class(data))) {
+    if(!("goelz-split" %in% class(data))) stop("data must be of class 'goelz'", call. = FALSE)
+      else stop("data must be of class 'goelz', not 'goelz-split' Use split = FALSE in goelz().", call. = FALSE)
+  }
+  if(!is.data.frame(data)){
+    if(length(data) == 1) data <- data[[1]] else    stop("data must contain only a single goelz triangle",    call. = FALSE)
+  }
+  if(!(is.numeric(size) & length(size) == 1))       stop("size must be numeric and of length 1",              call. = FALSE)
+  if(!(fill %in% allowed.cols & length(fill) == 1)) stop("fill must be one of: species, zone, border",        call. = FALSE)
+  if(!(color %in% c(allowed.cols, "none") &
+       length(color) == 1))                         stop("color must be one of: species, zone, border, none", call. = FALSE)
+  if(!(is.character(label) & length(label) == 1))   stop("label must be a character vector of length 1",      call. = FALSE)
+  if(!is.character(fill.palette))                   stop("fill.palette must be a character vector",           call. = FALSE)
+  if(!is.character(color.palette))                  stop("color.palette must be a character vector",          call. = FALSE)
+  if(!is.logical(corners))                          stop("corners must be a logical",                         call. = FALSE)
+  if(!is.logical(guides))                           stop("guides must be a logical",                          call. = FALSE)
+
+  data$species <- factor(data$species)
+
+  plot.obj <- ggplot(data, aes(x = x.field, y = y.field)) +
+    theme_void() +
+    coord_equal() +
+    scale_fill_manual(values = fill.palette) +
+    theme(legend.position = ifelse(legend, "right", "none"))
+
+  if(color == "none") {
+    plot.obj <- plot.obj +
+      geom_point(size = size, shape = 21, aes_string(fill = fill))
+  } else {
+    plot.obj <- plot.obj +
+      geom_point(size = size, shape = 21, aes_string(fill = fill, color = color)) +
+      scale_color_manual(values = color.palette)
+  }
+
+  if(label != "none") plot.obj <- plot.obj + geom_text(aes_string(label = label))
+  if(corners)         plot.obj <- plot.obj + geom_point(data = goelz_corners(data), color = "red", shape = 4, size = size / 2)
+  if(guides)          plot.obj <- plot.obj + geom_point(data = goelz_guides(data),  color = "red", shape = 3, size = size / 4)
 
   return(plot.obj)
 }
