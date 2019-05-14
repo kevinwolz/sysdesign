@@ -1,7 +1,7 @@
 
-create_goelz <- function(N     = 35,
-                         reps  = 1,
-                         split = FALSE) {
+goelz <- function(N     = 35,
+                  reps  = 1,
+                  split = FALSE) {
 
   L <- seq(from = 0, to = 100, length.out = N)
   SPECIES <- 1:3
@@ -82,6 +82,8 @@ create_goelz <- function(N     = 35,
     }
   }
 
+  g.class <- ifelse(split, "goelz-split", "goelz")
+  class(OUT) <- c(class(OUT), g.class, "sysd")
   return(OUT)
 }
 
@@ -200,47 +202,6 @@ add_goelz_border <- function(goelz, n) {
   return(goelz)
 }
 
-plot_goelz <- function(goelz,
-                       fill   = "species",
-                       color  = "border",
-                       label  = "none",
-                       fill.palette  = c("grey50", "white", "#E69F00", "#56B4E9",
-                                         "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"),
-                       color.palette = c("black", "green", "red", "blue", "orange", "purple"),
-                       corners = FALSE,
-                       guides  = FALSE){
-
-  goelz$species <- factor(goelz$species)
-
-  out <- ggplot(goelz, aes_string(x = "x.field", y = "y.field")) +
-    theme_void() +
-    coord_equal()
-
-  if(color == "none") {
-    out <- out +
-      geom_point(size = 4, shape = 21, aes_string(fill = fill))
-  } else {
-    out <- out +
-      geom_point(size = 4, shape = 21, aes_string(fill = fill, color = color)) +
-      scale_color_manual(values = color.palette)
-  }
-
-  out <- out + scale_fill_manual(values = fill.palette)
-  if(label != "none") out <- out + geom_text(aes_string(label = label))
-  if(corners)         out <- out + geom_point(data = goelz_corners(goelz), color = "red", shape = 4, size = 2)
-  if(guides)          out <- out + geom_point(data = goelz_guides(goelz),  color = "red", shape = 3, size = 1)
-
-  # ggtern(g, aes(x = x, y = y, z = z, fill = factor(species))) +
-  #   geom_point(size = 2, shape = 21) +
-  #   #geom_text(aes(label = x.pos), size = 2) +
-  #   scale_fill_manual(values = c("grey50", "white", "red ")) +
-  #   theme_void() +
-  #   theme(tern.axis.line = element_blank(),
-  #         panel.background = element_blank())
-
-  return(out)
-}
-
 optim_goelz <- function(N        = 35,
                         MU       = 100, # Population size
                         LAMBDA   = MU,  # Number of offspring to produce in each generation
@@ -284,7 +245,7 @@ optim_goelz <- function(N        = 35,
                              fun  = ecr::selGreedy)
 
   ### GA
-  INITIAL.POP <- create_goelz(N = N, reps = MU, split = TRUE)
+  INITIAL.POP <- goelz(N = N, reps = MU, split = TRUE)
   TRIANGLE    <- INITIAL.POP$triangle
   population  <- INITIAL.POP$A.design
   GEN <- 1
