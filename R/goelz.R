@@ -76,7 +76,7 @@ create_goelz <- function(N     = 35,
         dplyr::filter(zone == "A")
       out <- A_to_triangle(triangle  = triangle,
                            A.species = init_species(A.design$x, A.design$y, A.design$z))
-        out[[1]] <- out[[1]] %>% dplyr::select(id, x.pos, y.pos, x.field, y.field, species, zone, zone.id, x, y, z, border)
+      out[[1]] <- out[[1]] %>% dplyr::select(id, x.pos, y.pos, x.field, y.field, species, zone, zone.id, x, y, z, border)
       OUT <- c(OUT, out)
       index <- index + 1
     }
@@ -200,7 +200,7 @@ add_goelz_border <- function(goelz, n) {
   return(goelz)
 }
 
-plot_goelz <- function(data,
+plot_goelz <- function(goelz,
                        fill   = "species",
                        color  = "border",
                        label  = "none",
@@ -208,23 +208,27 @@ plot_goelz <- function(data,
                                          "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"),
                        color.palette = c("black", "green", "red", "blue", "orange", "purple"),
                        corners = FALSE,
-                       sides   = FALSE){
+                       guides  = FALSE){
 
-  data$species <- factor(data$species)
+  goelz$species <- factor(goelz$species)
 
-  out <- ggplot(data, aes_string(x = "x.field", y = "y.field")) +
-    geom_point(size = 4,
-               shape = 21,
-               aes_string(fill  = fill, color = color)) +
-    scale_fill_manual(values  = fill.palette) +
-    scale_color_manual(values = color.palette) +
+  out <- ggplot(goelz, aes_string(x = "x.field", y = "y.field")) +
     theme_void() +
     coord_equal()
 
-  if(label != "none") out <- out + geom_text(aes_string(label = label))
+  if(color == "none") {
+    out <- out +
+      geom_point(size = 4, shape = 21, aes_string(fill = fill))
+  } else {
+    out <- out +
+      geom_point(size = 4, shape = 21, aes_string(fill = fill, color = color)) +
+      scale_color_manual(values = color.palette)
+  }
 
-  if(corners) out <- out + geom_point(data = goelz_corners(data), color = "red", shape = 4, size = 2)
-  if(sides)   out <- out + geom_point(data = goelz_sides(data),   color = "red", shape = 3, size = 1)
+  out <- out + scale_fill_manual(values = fill.palette)
+  if(label != "none") out <- out + geom_text(aes_string(label = label))
+  if(corners)         out <- out + geom_point(data = goelz_corners(goelz), color = "red", shape = 4, size = 2)
+  if(guides)          out <- out + geom_point(data = goelz_guides(goelz),  color = "red", shape = 3, size = 1)
 
   # ggtern(g, aes(x = x, y = y, z = z, fill = factor(species))) +
   #   geom_point(size = 2, shape = 21) +
@@ -438,7 +442,7 @@ A_to_triangle <- function(triangle, A.species) {
   return(list(dplyr::bind_rows(A.design, B.design, C.design)))
 }
 
-mirror_right <- function(goelz, remove.joining.border = FALSE) {
+mirror_right <- function(goelz, joining.borders = max(goelz$border.num, na.rm = TRUE)) {
 
   # Create & rotate second triangle
   goelz.mirrored <- goelz
@@ -454,59 +458,27 @@ mirror_right <- function(goelz, remove.joining.border = FALSE) {
   goelz.mirrored$y.field <- y.field.new
 
   # Modify border rows if any
-  if(remove.joining.border & any(goelz$border)) {
-    n.borders <- goelz %>%
-      dplyr::filter(zone == "border-right") %>%
-      .$border.num %>%
-      max()
+  n.borders <- max(goelz$border.num, na.rm = TRUE)
+  borders.to.remove <- n.borders * 2 - joining.borders
 
-    goelz <- goelz %>%
-      dplyr::filter(zone != "border-right") %>% # Remove "right" border
-      dplyr::group_by(zone, border.num)
-
-    goelz.mirrored <- goelz.mirrored %>%
-      dplyr::filter(zone != "border-right") %>% # Remove "right" border
-      dplyr::group_by(zone, border.num)
-
-    # Remove stray border individuals from left and bottom borders
-    for(i in 1:n.borders) {
-      for(count in 1:i) {
-        goelz <- goelz %>%
-          dplyr::filter(!(zone == "border-left" & border.num == i & y.pos == max(y.pos)))
-
-        goelz.mirrored <- goelz.mirrored %>%
-          dplyr::filter(!(zone == "border-left" & border.num == i & x.pos == min(x.pos)))
-      }
-      if(i > 1) {
-        for(count in 1:(i-1)) {
-          goelz <- goelz %>%
-            dplyr::filter(!(zone == "border-bottom" & border.num == i & x.pos == max(x.pos)))
-
-          goelz.mirrored <- goelz.mirrored %>%
-            dplyr::filter(!(zone == "border-bottom" & border.num == i & y.pos == min(y.pos)))
-        }
-      }
+  if(borders.to.remove > 0) {
+    if(borders.to.remove %% 2 == 0) { # borders.to.remove is even
+      goelz          <- remove_edge(goelz = goelz,          side = "right", n = borders.to.remove / 2)
+      goelz.mirrored <- remove_edge(goelz = goelz.mirrored, side = "left",  n = borders.to.remove / 2)
+      y.pos.shift <- 0
+    } else { # borders.to.remove is odd
+      goelz          <- remove_edge(goelz = goelz,          side = "right", n = floor(borders.to.remove / 2))
+      goelz.mirrored <- remove_edge(goelz = goelz.mirrored, side = "left",  n = floor(borders.to.remove / 2) + 1)
+      y.pos.shift <- -1
     }
-
-    goelz <- goelz %>%
-      dplyr::ungroup()
-
-    goelz.mirrored <- goelz.mirrored %>%
-      dplyr::ungroup() %>%
-      dplyr::mutate(x.pos   = x.pos - n.borders) %>%
-      dplyr::mutate(y.pos   = y.pos - n.borders) %>%
-      dplyr::mutate(x.field = x.field - n.borders * 1.5) %>%
-      dplyr::mutate(y.field = y.field - n.borders * sqrt(3) / 2)
   }
 
-  # Remove edge row from mirrored triangle so it does not repeat
   goelz.mirrored <- goelz.mirrored %>%
     dplyr::mutate(triangle = "B") %>%
-    dplyr::group_by(y.pos) %>%
-    dplyr::filter(x.pos != min(x.pos)) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(x.pos   = x.pos - 1) %>%
-    dplyr::mutate(x.field = x.field - 1)
+    dplyr::mutate(x.pos   = x.pos - (borders.to.remove - 1)) %>%
+    dplyr::mutate(y.pos   = y.pos + y.pos.shift) %>%
+    dplyr::mutate(x.field = x.field - borders.to.remove + 0.5) %>%
+    dplyr::mutate(y.field = y.field + (y.pos.shift * sqrt(3) / 2))
 
   goelz.combine <- goelz %>%
     dplyr::mutate(triangle = "A") %>%
@@ -525,8 +497,9 @@ goelz_corners <- function(goelz) {
   return(out)
 }
 
-goelz_sides <- function(goelz) {
+goelz_guides <- function(goelz) {
   x.range  <- range(round(goelz$x.field, 2))
+  x.range <- c(x.range, x.range[1] + diff(x.range) / 3, x.range[2] - diff(x.range) / 3)
   y.unique <- unique(round(goelz$y.field, 2))
   out <- expand.grid(x.field = x.range, y.field = y.unique) %>%
     dplyr::arrange(x.field, y.field)
@@ -539,4 +512,34 @@ goelz_starts <- function(goelz) {
     dplyr::select(x.pos, y.pos, x.field, y.field) %>%
     dplyr::mutate(y.field = round(y.field, 2))
   return(out)
+}
+
+remove_edge <- function(goelz, side, n) {
+  if(side == "right") func <- max else func <- min
+  for(i in 1:n) {
+    goelz <- goelz %>%
+      dplyr::group_by(y.pos) %>%
+      dplyr::filter(x.pos != func(x.pos)) %>%
+      dplyr::ungroup()
+  }
+  return(goelz)
+}
+
+yard_to_feet_frac <- function(y) {
+
+  dec_to_frac <- dplyr::tibble(dec  = (0:15)/16,
+                               frac = c("", "1/16", "1/8", "3/16",  "1/4", "5/16",  "3/8", "7/16", "1/2",
+                                        "9/16", "5/8", "11/16", "3/4", "13/16", "7/8", "15/16"))
+  orig <- y * 3
+  feet <- floor(orig)
+  inch.orig <- (orig - feet) * 12
+  inches    <- floor(inch.orig)
+  dec <- inch.orig - inches
+  frac <- ""
+  if(dec != 0) frac <- paste0(" ", dec_to_frac$frac[which.min(abs(dec - dec_to_frac$dec))])
+
+  inch <- paste0(" ", inches, frac, "in")
+  if(inches == 0 & frac == "") inch <- ""
+
+  return(paste0(feet, "ft", inch))
 }
