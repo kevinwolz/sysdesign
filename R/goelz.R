@@ -87,7 +87,7 @@ goelz <- function(N     = 35,
   return(OUT)
 }
 
-add_goelz_border <- function(data, n) {
+goelz_add_border <- function(data, n) {
 
   resample <- function(x, ...) x[sample.int(length(x), ...)]
 
@@ -203,7 +203,7 @@ add_goelz_border <- function(data, n) {
   return(data)
 }
 
-optim_goelz <- function(N        = 35,
+goelz_optim <- function(N        = 35,
                         MU       = 100, # Population size
                         LAMBDA   = MU,  # Number of offspring to produce in each generation
                         MAX.GEN  = 150, # Number of generations to run GA
@@ -304,7 +304,7 @@ optim_goelz <- function(N        = 35,
   return(list(stats = pop.stats, data = pop.data))
 }
 
-mirror_right <- function(data, joining.borders = max(data$border.num, na.rm = TRUE)) {
+goelz_mirror <- function(data, joining.borders = max(data$border.num, na.rm = TRUE)) {
 
   # Create & rotate second triangle
   data.mirrored <- data
