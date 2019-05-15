@@ -4,7 +4,7 @@
 \alias{plot_nelder}
 \title{Plot a Nelder Fan experimental design}
 \usage{
-plot_nelder(data, size = 3, fill.colors = c("black", "white"),
+plot_nelder(data, size = 3, fill.palette = c("black", "white"),
   legend = FALSE, ex.area = FALSE, caption = FALSE)
 }
 \arguments{
@@ -12,7 +12,7 @@ plot_nelder(data, size = 3, fill.colors = c("black", "white"),
 
 \item{size}{A numeric value indicating point size.}
 
-\item{fill.colors}{A character vector of length 2 indicating the fill colors of experimental and border plants, respectively.}
+\item{fill.palette}{A character vector of length 2 indicating the fill colors of experimental and border plants, respectively.}
 
 \item{legend}{Logical indicating whether or not to include a legend for fill colors.}
 
@@ -27,13 +27,16 @@ A ggplot2 object.
 Plots a Nelder Fan experimental design.
 }
 \examples{
-data <- nelder(DN         = 1000,
-               D1         = 3000,
-               N          = 5,
-               tau        = 1,
-               even       = TRUE,
-               max.angle  = 360)
-plot_nelder(data)
+dat <- nelder(DN         = 1000,
+              D1         = 3000,
+              N          = 5,
+              tau        = 1,
+              even       = TRUE,
+              max.angle  = 360)
+plot_nelder(data = dat)
+}
+\seealso{
+Other plot functions: \code{\link{plot_goelz}}
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}

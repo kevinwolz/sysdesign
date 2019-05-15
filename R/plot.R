@@ -80,7 +80,7 @@ plot_nelder <- function(data,
 #' Plot a Goelz Triangle experimental design
 #' @description Plots a Goelz Triangle experimental design.
 #' @return A ggplot2 object.
-#' @param data An object of class 'goelz' created via \code{\link{goelz}}.
+#' @param data An object of class 'goelz' created via \code{\link{goelz}} with \code{split} = FALSE.
 #' @param size A numeric value indicating point size.
 #' @param fill One of "species", "zone", or "border", indicating the column of \code{data} that specifies the point fill color.
 #' @param color One of "species", "zone", or "border", indicating the column of \code{data} that specifies the point border color.
