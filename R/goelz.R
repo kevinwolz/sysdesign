@@ -87,18 +87,18 @@ goelz <- function(N     = 35,
   return(OUT)
 }
 
-add_goelz_border <- function(goelz, n) {
+add_goelz_border <- function(data, n) {
 
   resample <- function(x, ...) x[sample.int(length(x), ...)]
 
-  goelz <- goelz %>%
+  data <- data %>%
     dplyr::mutate(zone = as.character(zone))
 
   ## CREATE BORDER LOCATIONS
   border.max <- 0
   border.row <- 1
   while(border.row <= n) {
-    bottom.start <- goelz %>%
+    bottom.start <- data %>%
       dplyr::filter(y.pos == min(y.pos)) %>%
       dplyr::select(x.pos, y.pos, x.field, y.field, zone, species) %>%
       dplyr::mutate(zone    = "border-bottom") %>%
@@ -124,7 +124,7 @@ add_goelz_border <- function(goelz, n) {
       x.search <- bottom.full$x.pos[i] + c(-1, 0)
       y.search <- bottom.full$y.pos[i] + 1
 
-      search.window <- goelz %>%
+      search.window <- data %>%
         dplyr::filter(x.pos %in% x.search & y.pos %in% y.search)
 
       if(nrow(search.window) != 0) {
@@ -132,7 +132,7 @@ add_goelz_border <- function(goelz, n) {
       }
     }
 
-    left.start <- goelz %>%
+    left.start <- data %>%
       dplyr::filter(x.pos == min(x.pos)) %>%
       dplyr::select(x.pos, y.pos, x.field, y.field, zone, species) %>%
       dplyr::mutate(zone    = "border-left") %>%
@@ -155,7 +155,7 @@ add_goelz_border <- function(goelz, n) {
 
     left.full$species <- add_one(bottom.full$species)
 
-    right.start <- goelz %>%
+    right.start <- data %>%
       dplyr::group_by(y.pos) %>%
       dplyr::filter(x.pos == max(x.pos)) %>%
       dplyr::ungroup() %>%
@@ -182,7 +182,7 @@ add_goelz_border <- function(goelz, n) {
 
     right.full$species <- add_one(left.full$species)
 
-    goelz <- dplyr::bind_rows(goelz,
+    data <- dplyr::bind_rows(data,
                               bottom.full,
                               left.full,
                               right.full)
@@ -191,7 +191,7 @@ add_goelz_border <- function(goelz, n) {
     border.max <- border.max + nrow(bottom.full)
   }
 
-  goelz <- goelz %>%
+  data <- data %>%
     dplyr::mutate(x.pos = x.pos + n) %>%
     dplyr::mutate(y.pos = y.pos + n) %>%
     dplyr::mutate(x.field = x.field + abs(min(x.field))) %>%
@@ -199,7 +199,8 @@ add_goelz_border <- function(goelz, n) {
     dplyr::mutate(zone = factor(zone, levels = c("A", "B", "C", "border-bottom", "border-left", "border-right"))) %>%
     dplyr::arrange(y.pos, x.pos)
 
-  return(goelz)
+  class(data) <- unique(c(class(data), "goelz", "sysd"))
+  return(data)
 }
 
 optim_goelz <- function(N        = 35,
@@ -303,6 +304,79 @@ optim_goelz <- function(N        = 35,
   return(list(stats = pop.stats, data = pop.data))
 }
 
+mirror_right <- function(data, joining.borders = max(data$border.num, na.rm = TRUE)) {
+
+  # Create & rotate second triangle
+  data.mirrored <- data
+
+  theta <- -pi / 3
+  x.field.new <- data$x.field * cos(theta) - data$y.field * sin(theta) + max(data$x.field) / 2 + 1
+  x.field.new <- x.field.new - 2 * (x.field.new - mean(x.field.new))
+  y.field.new <- data$y.field * cos(theta) + data$x.field * sin(theta) + max(data$y.field)
+
+  data.mirrored$x.pos   <- -data$y.pos + max(data$x.pos) + 2
+  data.mirrored$y.pos   <- -data$x.pos + max(data$y.pos) + 1
+  data.mirrored$x.field <- x.field.new
+  data.mirrored$y.field <- y.field.new
+
+  # Modify border rows if any
+  n.borders <- max(data$border.num, na.rm = TRUE)
+  borders.to.remove <- n.borders * 2 - joining.borders
+
+  if(borders.to.remove > 0) {
+    if(borders.to.remove %% 2 == 0) { # borders.to.remove is even
+      data          <- remove_edge(data = data,          side = "right", n = borders.to.remove / 2)
+      data.mirrored <- remove_edge(data = data.mirrored, side = "left",  n = borders.to.remove / 2)
+      y.pos.shift <- 0
+    } else { # borders.to.remove is odd
+      data          <- remove_edge(data = data,          side = "right", n = floor(borders.to.remove / 2))
+      data.mirrored <- remove_edge(data = data.mirrored, side = "left",  n = floor(borders.to.remove / 2) + 1)
+      y.pos.shift <- -1
+    }
+  }
+
+  data.mirrored <- data.mirrored %>%
+    dplyr::mutate(triangle = "B") %>%
+    dplyr::mutate(x.pos   = x.pos - (borders.to.remove - 1)) %>%
+    dplyr::mutate(y.pos   = y.pos + y.pos.shift) %>%
+    dplyr::mutate(x.field = x.field - borders.to.remove + 0.5) %>%
+    dplyr::mutate(y.field = y.field + (y.pos.shift * sqrt(3) / 2))
+
+  data.combine <- data %>%
+    dplyr::mutate(triangle = "A") %>%
+    dplyr::bind_rows(data.mirrored) %>% # Combine two triangles
+    dplyr::arrange(y.pos, x.pos) %>% # Reassign ids
+    dplyr::mutate(id = 1:nrow(.))
+
+  class(data.combine) <- unique(c(class(data.combine), "goelz", "sysd"))
+  return(data.combine)
+}
+
+goelz_corners <- function(data) {
+  x.range <- range(round(data$x.field, 2))
+  y.range <- range(round(data$y.field, 2))
+  out <- expand.grid(x.field = x.range, y.field = y.range) %>%
+    dplyr::arrange(x.field, y.field)
+  return(out)
+}
+
+goelz_guides <- function(data) {
+  x.range  <- range(round(data$x.field, 2))
+  x.range <- c(x.range, x.range[1] + diff(x.range) / 3, x.range[2] - diff(x.range) / 3)
+  y.unique <- unique(round(data$y.field, 2))
+  out <- expand.grid(x.field = x.range, y.field = y.unique) %>%
+    dplyr::arrange(x.field, y.field)
+  return(out)
+}
+
+goelz_starts <- function(data) {
+  out <- data %>%
+    dplyr::filter(x.pos == 1) %>%
+    dplyr::select(x.pos, y.pos, x.field, y.field) %>%
+    dplyr::mutate(y.field = round(y.field, 2))
+  return(out)
+}
+
 goelz_fitness <- function(design, triangle) {
   design <- triangle %>%
     dplyr::filter(zone == "A") %>%
@@ -403,104 +477,13 @@ A_to_triangle <- function(triangle, A.species) {
   return(list(dplyr::bind_rows(A.design, B.design, C.design)))
 }
 
-mirror_right <- function(goelz, joining.borders = max(goelz$border.num, na.rm = TRUE)) {
-
-  # Create & rotate second triangle
-  goelz.mirrored <- goelz
-
-  theta <- -pi / 3
-  x.field.new <- goelz$x.field * cos(theta) - goelz$y.field * sin(theta) + max(goelz$x.field) / 2 + 1
-  x.field.new <- x.field.new - 2 * (x.field.new - mean(x.field.new))
-  y.field.new <- goelz$y.field * cos(theta) + goelz$x.field * sin(theta) + max(goelz$y.field)
-
-  goelz.mirrored$x.pos   <- -goelz$y.pos + max(goelz$x.pos) + 2
-  goelz.mirrored$y.pos   <- -goelz$x.pos + max(goelz$y.pos) + 1
-  goelz.mirrored$x.field <- x.field.new
-  goelz.mirrored$y.field <- y.field.new
-
-  # Modify border rows if any
-  n.borders <- max(goelz$border.num, na.rm = TRUE)
-  borders.to.remove <- n.borders * 2 - joining.borders
-
-  if(borders.to.remove > 0) {
-    if(borders.to.remove %% 2 == 0) { # borders.to.remove is even
-      goelz          <- remove_edge(goelz = goelz,          side = "right", n = borders.to.remove / 2)
-      goelz.mirrored <- remove_edge(goelz = goelz.mirrored, side = "left",  n = borders.to.remove / 2)
-      y.pos.shift <- 0
-    } else { # borders.to.remove is odd
-      goelz          <- remove_edge(goelz = goelz,          side = "right", n = floor(borders.to.remove / 2))
-      goelz.mirrored <- remove_edge(goelz = goelz.mirrored, side = "left",  n = floor(borders.to.remove / 2) + 1)
-      y.pos.shift <- -1
-    }
-  }
-
-  goelz.mirrored <- goelz.mirrored %>%
-    dplyr::mutate(triangle = "B") %>%
-    dplyr::mutate(x.pos   = x.pos - (borders.to.remove - 1)) %>%
-    dplyr::mutate(y.pos   = y.pos + y.pos.shift) %>%
-    dplyr::mutate(x.field = x.field - borders.to.remove + 0.5) %>%
-    dplyr::mutate(y.field = y.field + (y.pos.shift * sqrt(3) / 2))
-
-  goelz.combine <- goelz %>%
-    dplyr::mutate(triangle = "A") %>%
-    dplyr::bind_rows(goelz.mirrored) %>% # Combine two triangles
-    dplyr::arrange(y.pos, x.pos) %>% # Reassign ids
-    dplyr::mutate(id = 1:nrow(.))
-
-  return(goelz.combine)
-}
-
-goelz_corners <- function(goelz) {
-  x.range <- range(round(goelz$x.field, 2))
-  y.range <- range(round(goelz$y.field, 2))
-  out <- expand.grid(x.field = x.range, y.field = y.range) %>%
-    dplyr::arrange(x.field, y.field)
-  return(out)
-}
-
-goelz_guides <- function(goelz) {
-  x.range  <- range(round(goelz$x.field, 2))
-  x.range <- c(x.range, x.range[1] + diff(x.range) / 3, x.range[2] - diff(x.range) / 3)
-  y.unique <- unique(round(goelz$y.field, 2))
-  out <- expand.grid(x.field = x.range, y.field = y.unique) %>%
-    dplyr::arrange(x.field, y.field)
-  return(out)
-}
-
-goelz_starts <- function(goelz) {
-  out <- goelz %>%
-    dplyr::filter(x.pos == 1) %>%
-    dplyr::select(x.pos, y.pos, x.field, y.field) %>%
-    dplyr::mutate(y.field = round(y.field, 2))
-  return(out)
-}
-
-remove_edge <- function(goelz, side, n) {
+remove_edge <- function(data, side, n) {
   if(side == "right") func <- max else func <- min
   for(i in 1:n) {
-    goelz <- goelz %>%
+    data <- data %>%
       dplyr::group_by(y.pos) %>%
       dplyr::filter(x.pos != func(x.pos)) %>%
       dplyr::ungroup()
   }
-  return(goelz)
-}
-
-yard_to_feet_frac <- function(y) {
-
-  dec_to_frac <- dplyr::tibble(dec  = (0:15)/16,
-                               frac = c("", "1/16", "1/8", "3/16",  "1/4", "5/16",  "3/8", "7/16", "1/2",
-                                        "9/16", "5/8", "11/16", "3/4", "13/16", "7/8", "15/16"))
-  orig <- y * 3
-  feet <- floor(orig)
-  inch.orig <- (orig - feet) * 12
-  inches    <- floor(inch.orig)
-  dec <- inch.orig - inches
-  frac <- ""
-  if(dec != 0) frac <- paste0(" ", dec_to_frac$frac[which.min(abs(dec - dec_to_frac$dec))])
-
-  inch <- paste0(" ", inches, frac, "in")
-  if(inches == 0 & frac == "") inch <- ""
-
-  return(paste0(feet, "ft", inch))
+  return(data)
 }
