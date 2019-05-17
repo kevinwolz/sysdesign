@@ -3,6 +3,14 @@ goelz <- function(N     = 35,
                   reps  = 1,
                   split = FALSE) {
 
+  if(!(is.numeric(N) & length(N) == 1))       stop("N must be numeric and of length 1",                          call. = FALSE)
+  if(goelz_count(N = N)$remainder.3 != 0)     stop(paste0("A triangle with N = ", N,
+                                                          " does not have a number of points divisible by 3. ",
+                                                          "Please use a differnet N."), call. = FALSE)
+  if(N < 5)                                   stop("N must be greater than 5 to create a useful Goelz Triangle", call. = FALSE)
+  if(!(is.numeric(reps) & length(reps) == 1)) stop("reps must be numeric and of length 1",                       call. = FALSE)
+  if(!is.logical(split))                      stop("split must be a logical",                                    call. = FALSE)
+
   L <- seq(from = 0, to = 100, length.out = N)
   SPECIES <- 1:3
 
@@ -183,9 +191,9 @@ goelz_add_border <- function(data, n) {
     right.full$species <- add_one(left.full$species)
 
     data <- dplyr::bind_rows(data,
-                              bottom.full,
-                              left.full,
-                              right.full)
+                             bottom.full,
+                             left.full,
+                             right.full)
 
     border.row <- border.row + 1
     border.max <- border.max + nrow(bottom.full)
@@ -486,4 +494,12 @@ remove_edge <- function(data, side, n) {
       dplyr::ungroup()
   }
   return(data)
+}
+
+goelz_count <- function(N) {
+  count_func <- function(x) sum(1:x)
+  out <- dplyr::tibble(N            = N,
+                       total.points = purrr::map_dbl(N, count_func),
+                       remainder.3  = total.points %% 3)
+  return(out)
 }
