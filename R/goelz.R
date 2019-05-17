@@ -22,19 +22,19 @@ goelz <- function(N     = 35,
     dplyr::mutate(border = FALSE)
 
   A <- triangle %>%
-    dplyr::filter(x > 35 & y < 35) %>%
+    dplyr::filter(x > 35 & y <= 35) %>%
     dplyr::arrange(y, z) %>%
     dplyr::mutate(zone = "A") %>%
     dplyr::mutate(zone.id = 1:nrow(.))
 
   B <- triangle %>%
-    dplyr::filter(y > 35 & z < 35) %>%
+    dplyr::filter(y > 35 & z <= 35) %>%
     dplyr::arrange(z, x) %>%
     dplyr::mutate(zone = "B") %>%
     dplyr::mutate(zone.id = 1:nrow(.))
 
   C <- triangle %>%
-    dplyr::filter(z > 35 & x < 35) %>%
+    dplyr::filter(z > 35 & x <= 35) %>%
     dplyr::arrange(x, y) %>%
     dplyr::mutate(zone = "C") %>%
     dplyr::mutate(zone.id = 1:nrow(.))
