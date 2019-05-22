@@ -112,13 +112,8 @@ plot_goelz <- function(data,
                        legend  = TRUE){
 
   allowed.cols <- c("species", "zone", "border")
-  if(!("goelz" %in% class(data))) {
-    if(!("goelz-split" %in% class(data))) stop("data must be of class 'goelz'", call. = FALSE)
-      else stop("data must be of class 'goelz', not 'goelz-split' Use split = FALSE in goelz().", call. = FALSE)
-  }
-  if(!is.data.frame(data)){
-    if(length(data) == 1) data <- data[[1]] else    stop("data must contain only a single goelz triangle",    call. = FALSE)
-  }
+  goelz_class_check(data)
+  data <- goelz_single_check(data)
   if(!(is.numeric(size) & length(size) == 1))       stop("size must be numeric and of length 1",              call. = FALSE)
   if(!(fill %in% allowed.cols & length(fill) == 1)) stop("fill must be one of: species, zone, border",        call. = FALSE)
   if(!(color %in% c(allowed.cols, "none") &

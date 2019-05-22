@@ -38,7 +38,7 @@
 #' @importFrom dplyr %>%
 #' @family definition functions
 #' @examples
-#' sysd <- nelder(DN         = 1000,
+#' dat <- nelder(DN         = 1000,
 #'                D1         = 3000,
 #'                N          = 5,
 #'                tau        = 1,

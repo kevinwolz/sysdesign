@@ -45,7 +45,7 @@ around each plant has a constant shape throughout the design but increases as ra
 The terminology and calculations used here follow Parrott, Brinks, and Lhotka (2012).
 }
 \examples{
-sysd <- nelder(DN         = 1000,
+dat <- nelder(DN         = 1000,
                D1         = 3000,
                N          = 5,
                tau        = 1,
@@ -61,6 +61,11 @@ sysd <- nelder(DN         = 1000,
  New Forests 43:245–254.
  \url{http://link.springer.com/10.1007/s11056-011-9278-4}
 }
+}
+\seealso{
+Other definition functions: \code{\link{goelz_add_border}},
+  \code{\link{goelz_mirror}}, \code{\link{goelz_optim}},
+  \code{\link{goelz}}
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}

@@ -1,4 +1,46 @@
-
+#' Create a Goelz Triangle experimental design
+#' @description Creates a Goelz Triangle experimental design.
+#' @details The Goelz Triangle experimental design (Goelz 2001) is an experimental design that systematically
+#' varies species composition of three plant species within a single plot, while maintaining a constant plant density.
+#' This function creates a Goelz Triangle design following several criteria set forth by Goelz (2001):
+#' \itemize{
+#'  \item{"symmetry"}{ - Symmetry requires that, for every planting spot assigned, the 2 corresponding planting
+#'  spots be assigned corresponding species.}
+#'  \item{"equality"}{ - Equality merely requires that equal numbers of each species be assigned to each plot.
+#'  This will be achieved if the number of planting spots per plot is a multiple of three and if symmetry is imposed.}
+#'  \item{"conformity"}{ - Conformity to the intended pattern requires that the species proportion in any subsection of the
+#'  triangular plot is close to the expectations.}
+#' }
+#' This function does NOT robustly impose the conformity criterion. Species are assigned randomly to each position by sampling
+#' the three species using weights based on the theoretical probability of each species at that point.
+#' For a robust implementation of the conformity criterion that optimizes the rough initial approach of this function using an
+#' evolutionary algorithm, use \code{\link{goelz_optim}}.
+#' @return An object of class "sysd" and class "goelz".
+#' If \code{split = FALSE}, this is a list of data frames (tibbles) containing one row for each for each plant in the design.
+#' The length of the list is equal to \code{reps}.
+#' If \code{split = TRUE}, this is a list of three elements:
+#' \itemize{
+#'  \item{"triangle"}{ - A data frame (tibble) containing one row for each for each plant in the design,
+#'  but not including the species identity.}
+#'  \item{"design"}{ - A list of numeric vectors containing the species identities (1, 2, or, 3).
+#'  The length of the list is equal to \code{reps}.}
+#'  \item{"A.design"}{ - A list of numeric vectors containing the species identities (1, 2, or, 3) of plants in zone A.
+#'  The length of the list is equal to \code{reps}.}
+#' }
+#' @param N The number of plants to be on each edge of the design.
+#' @param reps The number of independent designs to create.
+#' @param split A logical indicating whether the result should be in "split" format or not.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @references
+#' \itemize{
+#'  \item Goelz JCG (2001) Systematic experimental designs for mixed species plantings. Native Plants Journal 2:90–96.
+#'  \url{http://npj.uwpress.org/content/2/2/90.short}
+#' }
+#' @export
+#' @importFrom dplyr %>%
+#' @family definition functions
+#' @examples
+#' dat <- goelz()
 goelz <- function(N     = 35,
                   reps  = 1,
                   split = FALSE) {
@@ -96,7 +138,35 @@ goelz <- function(N     = 35,
   return(OUT)
 }
 
+#' Add border rows to a Goelz Triangle experimental design
+#' @description Adds border rows to a Goelz Triangle experimental design.
+#' @details Goelz (2001) suggests that all Goelz Triangle experimental designs be enclosed within a number of border/buffer rows.
+#' These border rows reduce edge effects and thereby increase the number of plants with useable data.
+#' The presence of border rows will also increases the number of individuals whose nearest neighbors are all conspecifics.
+#' Goelz (2001) suggests that the species in each planting spot in the border rows be assigned as a 50:50 probability of the
+#' species in the two adjacent spots towards the interior of the triangle. This is the method used here, with each additional
+#' border row being determined successively. The border rows are also held to the same standard of symmetry across the three
+#' zones in the triangle.
+#' @return An object of class "goelz".
+#' @param data An object of class "sysd", "goelz", and "goelz-border".
+#' @param n The number of border rows to add on each side of the design.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @references
+#' \itemize{
+#'  \item Goelz JCG (2001) Systematic experimental designs for mixed species plantings. Native Plants Journal 2:90–96.
+#'  \url{http://npj.uwpress.org/content/2/2/90.short}
+#' }
+#' @export
+#' @importFrom dplyr %>%
+#' @family definition functions
+#' @examples
+#' dat <- goelz()
+#' dat.border <- goelz_add_border(data = dat, n = 3)
 goelz_add_border <- function(data, n) {
+
+  goelz_class_check(data)
+  data <- goelz_single_check(data)
+  if(!(is.numeric(n) & length(n) == 1)) stop("n must be numeric and of length 1", call. = FALSE)
 
   resample <- function(x, ...) x[sample.int(length(x), ...)]
 
@@ -208,17 +278,123 @@ goelz_add_border <- function(data, n) {
     dplyr::mutate(zone = factor(zone, levels = c("A", "B", "C", "border-bottom", "border-left", "border-right"))) %>%
     dplyr::arrange(y.pos, x.pos)
 
-  class(data) <- unique(c(class(data), "goelz", "sysd"))
+  class(data) <- unique(c(class(data), "sysd", "goelz", "goelz-border"))
   return(data)
 }
 
+#' Mirror a Goelz Triangle experimental design
+#' @description Mirrors a Goelz Triangle experimental design and combines it with the original design to create a
+#' parallelogram design.
+#' @details When establishing two or more replicate Goelz Triangle plots, the plots can be stacked next to each other,
+#' with species matched, to further reduce edge effects. This function takes a single Goelz Triangle, mirrors it to create a
+#' second triangle, and then combines the two together into a parallelogram design. When merging the two designs, the border
+#' rows between the two triangles, if there are any, "double up". This may or may not be desired. Border rows between the two
+#' triangles is not really necessary for reducing edge effects, since this edge is now on the interior of the parallelogram.
+#' However, at least some borders between triangles may be desired to "separate" the two replicates and "maintain" independence.
+#' Any approach can be created by specifiying the exact number of border rows to maintain betwen the two triangles via the
+#' \code{joining.borders} argument. The default is to maintain only the number of border rows that each triangle originally had
+#' (i.e. half the number of borders initially between the two triangles when merging them.)
+#' @return An object of class "sysd", "goelz", and "goelz-mirror".
+#' @param data An object of class "goelz".
+#' @param joining.borders The number of border rows to maintain between the two triangles.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @references
+#' \itemize{
+#'  \item Goelz JCG (2001) Systematic experimental designs for mixed species plantings. Native Plants Journal 2:90–96.
+#'  \url{http://npj.uwpress.org/content/2/2/90.short}
+#' }
+#' @export
+#' @importFrom dplyr %>%
+#' @family definition functions
+#' @examples
+#' dat <- goelz()
+#' dat.border <- goelz_add_border(data = dat, n = 3)
+#' dat.border.mirror <- goelz_mirror(data = dat.border)
+goelz_mirror <- function(data, joining.borders = max(data$border.num, na.rm = TRUE)) {
+
+  # Create & rotate second triangle
+  data.mirrored <- data
+
+  theta <- -pi / 3
+  x.field.new <- data$x.field * cos(theta) - data$y.field * sin(theta) + max(data$x.field) / 2 + 1
+  x.field.new <- x.field.new - 2 * (x.field.new - mean(x.field.new))
+  y.field.new <- data$y.field * cos(theta) + data$x.field * sin(theta) + max(data$y.field)
+
+  data.mirrored$x.pos   <- -data$y.pos + max(data$x.pos) + 2
+  data.mirrored$y.pos   <- -data$x.pos + max(data$y.pos) + 1
+  data.mirrored$x.field <- x.field.new
+  data.mirrored$y.field <- y.field.new
+
+  # Modify border rows if any
+  n.borders <- max(data$border.num, na.rm = TRUE)
+  borders.to.remove <- n.borders * 2 - joining.borders
+
+  if(borders.to.remove > 0) {
+    if(borders.to.remove %% 2 == 0) { # borders.to.remove is even
+      data          <- remove_edge(data = data,          side = "right", n = borders.to.remove / 2)
+      data.mirrored <- remove_edge(data = data.mirrored, side = "left",  n = borders.to.remove / 2)
+      y.pos.shift <- 0
+    } else { # borders.to.remove is odd
+      data          <- remove_edge(data = data,          side = "right", n = floor(borders.to.remove / 2))
+      data.mirrored <- remove_edge(data = data.mirrored, side = "left",  n = floor(borders.to.remove / 2) + 1)
+      y.pos.shift <- -1
+    }
+  }
+
+  data.mirrored <- data.mirrored %>%
+    dplyr::mutate(triangle = "B") %>%
+    dplyr::mutate(x.pos   = x.pos - (borders.to.remove - 1)) %>%
+    dplyr::mutate(y.pos   = y.pos + y.pos.shift) %>%
+    dplyr::mutate(x.field = x.field - borders.to.remove + 0.5) %>%
+    dplyr::mutate(y.field = y.field + (y.pos.shift * sqrt(3) / 2))
+
+  data.combine <- data %>%
+    dplyr::mutate(triangle = "A") %>%
+    dplyr::bind_rows(data.mirrored) %>% # Combine two triangles
+    dplyr::arrange(y.pos, x.pos) %>% # Reassign ids
+    dplyr::mutate(id = 1:nrow(.))
+
+  class(data.combine) <- unique(c(class(data.combine), "sysde", "goelz", "goelz-mirror"))
+  return(data.combine)
+}
+
+#' Create conformity-optimized Goelz Triangle experimental designs
+#' @description Creates conformity-optimized Goelz Triangle experimental designs
+#' @details While \code{\link{goelz}} creates Goelz Triangle designs that roughly follow the conformity criterion set forth
+#' by Goelz (2001), this function optimizes designs for conformity using an evolutionary algorithm. Function parameters other
+#' than \code{N} are all controls on the evolutionary algorithm. The \code{\link{ecr}} package is used for the evolutionary
+#' algorithm.
+#' @return An list containing:
+#' \itemize{
+#'  \item{"stats"}{ - A data frame (tibble) containing statistics on each generation in the evolutionary algorithm.}
+#'  \item{"data"}{ - A data frame (tibble) containing the actual data (designs) of each Goelz Triangle in each generation.}
+#' }
+#' @param N The number of plants to be on each edge of the design.
+#' @param MU The population size.
+#' @param LAMBDA The number of offspring to produce in each generation.
+#' @param MAX.GEN The number of generations to run the evolutionary algorithm.
+#' @param P.RECOMB The probability of two parents to perform crossover.
+#' @param RECOMB The crossover probability for each gene.
+#' @param P.MUT The probability to apply mutation to a child.
+#' @param MUT The mutation probability for each gene.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @references
+#' \itemize{
+#'  \item Goelz JCG (2001) Systematic experimental designs for mixed species plantings. Native Plants Journal 2:90–96.
+#'  \url{http://npj.uwpress.org/content/2/2/90.short}
+#' }
+#' @export
+#' @importFrom dplyr %>%
+#' @family definition functions
+#' @examples
+#' dat <- goelz_optim()
 goelz_optim <- function(N        = 35,
-                        MU       = 100, # Population size
-                        LAMBDA   = MU,  # Number of offspring to produce in each generation
-                        MAX.GEN  = 150, # Number of generations to run GA
-                        P.RECOMB = 1,   # Probability of two parents to perform crossover
-                        RECOMB   = 0.1, # Crossover probability for each gene
-                        P.MUT    = 1,   # Probability to apply mutation to a child
+                        MU       = 100,
+                        LAMBDA   = MU,
+                        MAX.GEN  = 150,
+                        P.RECOMB = 1,
+                        RECOMB   = 0.1,
+                        P.MUT    = 1,
                         MUT      = 0.005) {# Probability of mutation of each gene
 
   ### GA CONTROLS
@@ -311,54 +487,6 @@ goelz_optim <- function(N        = 35,
   }
 
   return(list(stats = pop.stats, data = pop.data))
-}
-
-goelz_mirror <- function(data, joining.borders = max(data$border.num, na.rm = TRUE)) {
-
-  # Create & rotate second triangle
-  data.mirrored <- data
-
-  theta <- -pi / 3
-  x.field.new <- data$x.field * cos(theta) - data$y.field * sin(theta) + max(data$x.field) / 2 + 1
-  x.field.new <- x.field.new - 2 * (x.field.new - mean(x.field.new))
-  y.field.new <- data$y.field * cos(theta) + data$x.field * sin(theta) + max(data$y.field)
-
-  data.mirrored$x.pos   <- -data$y.pos + max(data$x.pos) + 2
-  data.mirrored$y.pos   <- -data$x.pos + max(data$y.pos) + 1
-  data.mirrored$x.field <- x.field.new
-  data.mirrored$y.field <- y.field.new
-
-  # Modify border rows if any
-  n.borders <- max(data$border.num, na.rm = TRUE)
-  borders.to.remove <- n.borders * 2 - joining.borders
-
-  if(borders.to.remove > 0) {
-    if(borders.to.remove %% 2 == 0) { # borders.to.remove is even
-      data          <- remove_edge(data = data,          side = "right", n = borders.to.remove / 2)
-      data.mirrored <- remove_edge(data = data.mirrored, side = "left",  n = borders.to.remove / 2)
-      y.pos.shift <- 0
-    } else { # borders.to.remove is odd
-      data          <- remove_edge(data = data,          side = "right", n = floor(borders.to.remove / 2))
-      data.mirrored <- remove_edge(data = data.mirrored, side = "left",  n = floor(borders.to.remove / 2) + 1)
-      y.pos.shift <- -1
-    }
-  }
-
-  data.mirrored <- data.mirrored %>%
-    dplyr::mutate(triangle = "B") %>%
-    dplyr::mutate(x.pos   = x.pos - (borders.to.remove - 1)) %>%
-    dplyr::mutate(y.pos   = y.pos + y.pos.shift) %>%
-    dplyr::mutate(x.field = x.field - borders.to.remove + 0.5) %>%
-    dplyr::mutate(y.field = y.field + (y.pos.shift * sqrt(3) / 2))
-
-  data.combine <- data %>%
-    dplyr::mutate(triangle = "A") %>%
-    dplyr::bind_rows(data.mirrored) %>% # Combine two triangles
-    dplyr::arrange(y.pos, x.pos) %>% # Reassign ids
-    dplyr::mutate(id = 1:nrow(.))
-
-  class(data.combine) <- unique(c(class(data.combine), "goelz", "sysd"))
-  return(data.combine)
 }
 
 goelz_corners <- function(data) {
@@ -503,4 +631,21 @@ goelz_count <- function(N) {
                        total.points = purrr::map_dbl(N, count_func),
                        remainder.3  = total.points %% 3)
   return(out)
+}
+
+goelz_single_check <- function(data) {
+  if(!is.data.frame(data)){
+    if(length(data) == 1) data <- data[[1]] else stop("data must contain only a single goelz triangle", call. = FALSE)
+  }
+  return(data)
+}
+
+goelz_class_check <- function(data) {
+  if(!("goelz" %in% class(data))) {
+    if("goelz-split" %in% class(data)) {
+      stop("data must be of class 'goelz', not 'goelz-split' Use split = FALSE in goelz().", call. = FALSE)
+    } else if("goelz-mirror" %in% class(data)) {
+      stop("data must be of class 'goelz', not 'goelz-mirror'", call. = FALSE)
+    } else stop("data must be of class 'goelz'", call. = FALSE)
+  }
 }
