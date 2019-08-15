@@ -103,6 +103,47 @@ nelder <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
   return(out)
 }
 
+#' Create a Nelder Fan experimental design decision table
+#' @description Creates a Nelder Fan experimental design decision table.
+#' @details This function helps explore Nelder Fan design options and select a design that meets external constraints
+#' (e.g. plant or space availability). Function inputs are identical to \code{\link{nelder}}, but inputs of any length are allowed.
+#' All possible combinations of inputs are created using \code{expand.grid}, and then each of these cases is passed to
+#' \code{\link{nelder}} for evaluation. Inputs and outputs are all combined and returned for evaluation.
+#' @return A tibble containing a wide range of traits of the experimental designs.
+#' @param DN Plant density within the last experimental arc (plants ha-1) (i.e. lower extreme of experimental plant density range)
+#' @param D1 Plant density within the first experimental arc (plants ha-1) (i.e. upper extreme of experimental plant density range)
+#' @param N Number of experimental arcs (i.e. number of densities to be tested within D1 to DN)
+#' @param tau The "rectangularity" proportion. See \code{\link{nelder}} for details.
+#' @param even Logical indicated whether or not the design should be adjusted so that the angle between spokes goes evenly
+#' into \code{max.angle} (i.e. so that there are no spokes that must be removed from the experiment as border spokes).
+#' @param max.angle The maximum rotation (in degrees) of the design. If 360, then a full circle design will be created.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @export
+#' @family definition functions
+#' @examples
+#' dat <- nelder_decision(DN         = seq(1000, 2000, 50),
+#'                        D1         = 3000,
+#'                        N          = 5,
+#'                        tau        = 1,
+#'                        even       = TRUE,
+#'                        max.angle  = c(90, 180, 360))
+nelder_decision <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
+  test.cases <- expand.grid(DN = DN, D1 = D1, N = N, tau = tau, even = even, max.angle = max.angle)
+
+  OUT <- dplyr::tibble()
+  for(i in 1:nrow(test.cases)) {
+    out <- nelder(DN        = test.cases$DN[i],
+                  D1        = test.cases$D1[i],
+                  N         = test.cases$N[i],
+                  tau       = test.cases$tau[i],
+                  even      = test.cases$even[i],
+                  max.angle = test.cases$max.angle[i])
+    OUT <- dplyr::bind_rows(OUT, out$plot)
+  }
+  return(dplyr::bind_cols(test.cases, OUT))
+}
+
+
 #' Calculate Nelder Fan design
 #' @description Calculates Nelder Fan design
 #' Used within \code{\link{nelder}}.

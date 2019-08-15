@@ -39,7 +39,7 @@ dat.border <- goelz_add_border(data = dat, n = 3)
 \seealso{
 Other definition functions: \code{\link{goelz_mirror}},
   \code{\link{goelz_optim}}, \code{\link{goelz}},
-  \code{\link{nelder}}
+  \code{\link{nelder_decision}}, \code{\link{nelder}}
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}
