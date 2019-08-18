@@ -163,10 +163,10 @@ nelder_calc <- function(alpha, theta, tau, D1, N, max.angle, n.spokes, spoke.bor
   Co <- (2 - (alpha + alpha ^ -1)) / (2 * (alpha - alpha ^ -1)) * 100
   r0 <- sqrt(20000 / (D1 * theta * (alpha ^ 3 - alpha))) # m
 
-  arc.dat <- dplyr::tibble(arc = c(0:(N + 1))) %>%
-    dplyr::mutate(r       = r0 * alpha ^ arc) %>%                         # m
-    dplyr::mutate(space   = theta * r ^ 2 * (alpha - alpha ^ -1) / 2) %>% # m2
-    dplyr::mutate(density = 10000 / space)                                # plants ha-1
+  arc.dat <- dplyr::tibble(arc     = c(0:(N + 1)),
+                           r       = r0 * alpha ^ arc,                         # m
+                           space   = theta * r ^ 2 * (alpha - alpha ^ -1) / 2, # m2
+                           density = 10000 / space)                            # plants ha-1
 
   arc.dat$space[c(1, N + 2)]   <- NA
   arc.dat$density[c(1, N + 2)] <- NA
@@ -191,7 +191,9 @@ nelder_calc <- function(alpha, theta, tau, D1, N, max.angle, n.spokes, spoke.bor
   plant.dat <- dplyr::tibble(spoke  = rep(1:plot.dat$spokes, each  = plot.dat$arcs),
                              arc    = rep(arc.dat$arc,       times = plot.dat$spokes),
                              theta  = rep(plot.dat$angle * 0:(plot.dat$spokes - 1), each = plot.dat$arcs)) %>%
-    dplyr::left_join(arc.dat, by = "arc")
+    dplyr::left_join(arc.dat, by = "arc") %>%
+    dplyr:mutate(x = r * cos(theta * pi / 180)) %>%
+    dplyr:mutate(y = r * sin(theta * pi / 180))
 
   ## DESIGNATE EXPERIMENTAL VS BORDER ROWS
   if(spoke.borders) {
