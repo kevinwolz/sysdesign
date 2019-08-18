@@ -46,13 +46,13 @@
 #'                max.angle  = 360)
 nelder <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
 
-  if(!(is.numeric(D1) & (D1 %% 1 == 0) & length(D1) == 1))         stop("D1 must an integer and of length 1",           call. = FALSE)
-  if(!(is.numeric(DN) & (DN %% 1 == 0) & length(DN) == 1))         stop("DN must an integer and of length 1",           call. = FALSE)
-  if(!(is.numeric(N)  & (N  %% 1 == 0) & length(N)  == 1 & N > 2)) stop("N must be an integer greater than 2",          call. = FALSE)
-  if(D1 <= DN)                                                     stop("D1 must be greater than DN",                   call. = FALSE)
-  if(!(is.numeric(tau) & length(tau) == 1))                        stop("tau argument must be numeric and of length 1", call. = FALSE)
-  if(!is.logical(even))                                            stop("even argument must be a logical",              call. = FALSE)
-  if(max.angle > 360 | max.angle <= 0)                             stop("max.angle argument must be between 0 and 360", call. = FALSE)
+  if(!(is.numeric(D1) & (D1 %% 1 == 0) & length(D1) == 1))      stop("D1 must an integer and of length 1",           call. = FALSE)
+  if(!(is.numeric(DN) & (DN %% 1 == 0) & length(DN) == 1))      stop("DN must an integer and of length 1",           call. = FALSE)
+  if(!(is.numeric(N) & (N %% 1 == 0) & length(N) == 1 & N > 2)) stop("N must be an integer greater than 2",          call. = FALSE)
+  if(D1 <= DN)                                                  stop("D1 must be greater than DN",                   call. = FALSE)
+  if(!(is.numeric(tau) & length(tau) == 1))                     stop("tau argument must be numeric and of length 1", call. = FALSE)
+  if(!is.logical(even))                                         stop("even argument must be a logical",              call. = FALSE)
+  if(max.angle > 360 | max.angle <= 0)                          stop("max.angle argument must be between 0 and 360", call. = FALSE)
 
   max.angle.rad <- max.angle * pi / 180  # radians
 
@@ -192,8 +192,8 @@ nelder_calc <- function(alpha, theta, tau, D1, N, max.angle, n.spokes, spoke.bor
                              arc    = rep(arc.dat$arc,       times = plot.dat$spokes),
                              theta  = rep(plot.dat$angle * 0:(plot.dat$spokes - 1), each = plot.dat$arcs)) %>%
     dplyr::left_join(arc.dat, by = "arc") %>%
-    dplyr:mutate(x = r * cos(theta * pi / 180)) %>%
-    dplyr:mutate(y = r * sin(theta * pi / 180))
+    dplyr::mutate(x = r * cos(theta * pi / 180)) %>%
+    dplyr::mutate(y = r * sin(theta * pi / 180))
 
   ## DESIGNATE EXPERIMENTAL VS BORDER ROWS
   if(spoke.borders) {
