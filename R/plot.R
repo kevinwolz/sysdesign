@@ -3,7 +3,9 @@
 #' @return A ggplot2 object.
 #' @param data An object of class 'nelder' created via \code{\link{nelder}}.
 #' @param size A numeric value indicating point size.
-#' @param fill.palette A character vector of length 2 indicating the fill colors of experimental and border plants, respectively.
+#' @param fill.palette A character vector of length 2 indicating the fill colors of different species.
+#' @param species Logical indicating whether or not to plot species as differnet colors
+#' (see \code{\link{nelder_biculture}}).
 #' @param legend Logical indicating whether or not to include a legend for fill colors.
 #' @param ex.area Logical indicating whether or not and example growing area of one plant should be shown.
 #' @param caption Logical indicating whether or not to include a caption with generic data about the design.
@@ -22,6 +24,7 @@
 plot_nelder <- function(data,
                         size         = 3,
                         fill.palette = c("black", "white"),
+                        species      = TRUE,
                         legend       = FALSE,
                         ex.area      = FALSE,
                         caption      = FALSE) {
@@ -63,16 +66,26 @@ plot_nelder <- function(data,
 
   plot.obj <- ggplot(data$plants) +
     area.geom +
-    geom_point(aes(x = r, y = theta, fill = exp), shape = 21, size = size) +
-    scale_fill_manual(values = fill.palette) +
     lims(x = c(0, NA),
          y = c(0, 360)) +
     coord_polar(theta = "y", start = -pi / 2, direction = -1) +
     theme_void() +
-    labs(fill = NULL, caption = plot.caption) +
+    labs(shape = NULL, caption = plot.caption) +
+    guides(fill = FALSE) +
     theme(plot.caption    = element_text(size = 20, hjust = 0),
           legend.position = ifelse(legend, "bottom", "none"),
-          legend.text     = element_text(size = 18))
+          legend.text     = element_text(size = 18)) +
+    scale_fill_manual(values  = fill.palette) +
+    scale_shape_manual(values = c(21, 24))
+
+  if(species & "species" %in% names(data$plants)) {
+    plot.obj <- plot.obj +
+      geom_point(aes(x = r, y = theta, fill = species, shape = exp), size = size)
+
+  } else {
+    plot.obj <- plot.obj +
+      geom_point(aes(x = r, y = theta, shape = exp), size = size, fill = "black")
+  }
 
   return(plot.obj)
 }

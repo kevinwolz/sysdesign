@@ -5,14 +5,17 @@
 \title{Plot a Nelder Fan experimental design}
 \usage{
 plot_nelder(data, size = 3, fill.palette = c("black", "white"),
-  legend = FALSE, ex.area = FALSE, caption = FALSE)
+  species = TRUE, legend = FALSE, ex.area = FALSE, caption = FALSE)
 }
 \arguments{
 \item{data}{An object of class 'nelder' created via \code{\link{nelder}}.}
 
 \item{size}{A numeric value indicating point size.}
 
-\item{fill.palette}{A character vector of length 2 indicating the fill colors of experimental and border plants, respectively.}
+\item{fill.palette}{A character vector of length 2 indicating the fill colors of different species.}
+
+\item{species}{Logical indicating whether or not to plot species as differnet colors
+(see \code{\link{nelder_biculture}}).}
 
 \item{legend}{Logical indicating whether or not to include a legend for fill colors.}
 
