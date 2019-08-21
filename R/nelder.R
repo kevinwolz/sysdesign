@@ -146,17 +146,20 @@ nelder_decision <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
 
 #' Create a Biculture Nelder Fan experimental design
 #' @description Creates a Biculture Nelder Fan experimental design.
-#' @details The Nelder Fan or Nelder Wheel Type Ia experimental design (Nelder 1962) is an experimental design that systematically
-#' varies plant desnity within a single plot, where the growing area around each plant has a constant shape throughout
-#' the design but increases as radius increases. Goelz (2001) adapted this design to simultaneously study the
-#' effect of species composition by superimposing a species gradient along the arc (Figure 6 of Goelz, 2001).
+#' @details The Nelder Fan or Nelder Wheel Type Ia experimental design (Nelder 1962) is an experimental design that
+#' systematically varies plant desnity within a single plot, where the growing area around each plant has a constant
+#' shape throughout the design but increases as radius increases. Goelz (2001) adapted this design to simultaneously
+#' study the effect of species composition by superimposing a species gradient along the arc (Figure 6 of Goelz, 2001).
 #' This function takes a Nelder Fan design from \code{\link{nelder}} and adds species identities to create
-#' the Goelz (2001) biculture version.
-#' @return An object of class "sysd" and class "nelder". This is a list of 5 elements, the first 3 of which are the same as
-#' for \code{\link{nelder}}, and the last 2 of which are:
+#' the Goelz (2001) biculture version. For Nelder Fan designs with \code{max.angle = 360}, species monoculture are
+#' set to opposite poles of the circle, and the composition gradient occurs in two direction along either side of the
+#' circle in between. For Nelder Fan designs with \code{max angle < 360}, the composition gradient occurs in one
+#' direction between monoculture extremes at either edge of the design.
+#' @return An object of classes "sysd", "nelder", and "biculture". This is a list of 5 elements,
+#' the first 3 of which are the same as for \code{\link{nelder}}, and the last 2 of which are:
 #' \itemize{
 #'  \item{"species.counts"}{ - An abject of class "table" containing the total counts of each species in the design.}
-#'  \item{"spoke.composition"}{ - A data frame (tibble) containing the ratio of each species by spoke.}
+#'  \item{"spoke.composition"}{ - A data frame (tibble) containing the ratio and counts of each species by spoke.}
 #' }
 #' @param design An object of class "nelder" created by \code{\link{nelder}}.
 #' @param comps An option numeric vector containing the ratios of one species in each spoke. This can effectively be used to
@@ -180,13 +183,18 @@ nelder_decision <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
 nelder_biculture <- function(design, comps = NULL) {
 
   if(!("nelder" %in% class(design))) stop("design must be of class nelder",            call. = FALSE)
-  if(design$plot$spokes %% 2 != 0)   stop("design must have an even number of spokes", call. = FALSE)
 
   if(is.null(comps)) { # generate the sequence of species A composition in each spoke
-    inc.length <- design$plot$spokes / 2 + 1
-    inc.seq <- seq(0, 1, length.out = inc.length)
-    dec.seq <- rev(inc.seq[c(-1, -length(inc.seq))])
-    comps <- c(inc.seq, dec.seq)
+    if(design$plot$max.angle == 360) {
+      if(design$plot$spokes %% 2 != 0) stop("when max.angle = 360,
+                                            design must have an even number of spokes", call. = FALSE)
+      inc.length <- design$plot$spokes / 2 + 1
+      inc.seq <- seq(0, 1, length.out = inc.length)
+      dec.seq <- rev(inc.seq[c(-1, -length(inc.seq))])
+      comps <- c(inc.seq, dec.seq)
+    } else {
+      comps <- seq(0, 1, length.out = design$plot$spokes)
+    }
   }
 
   if(!is.numeric(comps))                  stop("comps must be a numeric vector",                               call. = FALSE)
@@ -207,8 +215,11 @@ nelder_biculture <- function(design, comps = NULL) {
   design$species.counts    <- table(design$plants$species)
   design$spoke.composition <- dplyr::tibble(spoke   = 1:design$plot$spokes,
                                             A.ratio = comps,
-                                            B.ratio = 1 - A.ratio)
+                                            B.ratio = 1 - A.ratio,
+                                            A.count = quants,
+                                            B.count = design$plot$arcs - A.count)
 
+  class(design) <- c(class(design), "biculture")
   return(design)
 }
 
@@ -249,6 +260,7 @@ nelder_calc <- function(alpha, theta, tau, D1, N, max.angle, n.spokes, spoke.bor
                             rmax           = max(arc.dat$r),
                             alpha          = alpha,
                             angle          = theta * 180 / pi,
+                            max.angle      = max.angle,
                             rectangularity = tau,
                             non.centrality = Co,
                             min.density    = min(arc.dat$density, na.rm = TRUE),

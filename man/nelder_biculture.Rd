@@ -14,23 +14,26 @@ create non-standard bi-culture designs that deviate from the Goelz (2001) approa
 gradient of speies composition is used between monoculture extremes for each species.}
 }
 \value{
-An object of class "sysd" and class "nelder". This is a list of 5 elements, the first 3 of which are the same as
-for \code{\link{nelder}}, and the last 2 of which are:
+An object of classes "sysd", "nelder", and "biculture". This is a list of 5 elements,
+the first 3 of which are the same as for \code{\link{nelder}}, and the last 2 of which are:
 \itemize{
  \item{"species.counts"}{ - An abject of class "table" containing the total counts of each species in the design.}
- \item{"spoke.composition"}{ - A data frame (tibble) containing the ratio of each species by spoke.}
+ \item{"spoke.composition"}{ - A data frame (tibble) containing the ratio and counts of each species by spoke.}
 }
 }
 \description{
 Creates a Biculture Nelder Fan experimental design.
 }
 \details{
-The Nelder Fan or Nelder Wheel Type Ia experimental design (Nelder 1962) is an experimental design that systematically
-varies plant desnity within a single plot, where the growing area around each plant has a constant shape throughout
-the design but increases as radius increases. Goelz (2001) adapted this design to simultaneously study the
-effect of species composition by superimposing a species gradient along the arc (Figure 6 of Goelz, 2001).
+The Nelder Fan or Nelder Wheel Type Ia experimental design (Nelder 1962) is an experimental design that
+systematically varies plant desnity within a single plot, where the growing area around each plant has a constant
+shape throughout the design but increases as radius increases. Goelz (2001) adapted this design to simultaneously
+study the effect of species composition by superimposing a species gradient along the arc (Figure 6 of Goelz, 2001).
 This function takes a Nelder Fan design from \code{\link{nelder}} and adds species identities to create
-the Goelz (2001) biculture version.
+the Goelz (2001) biculture version. For Nelder Fan designs with \code{max.angle = 360}, species monoculture are
+set to opposite poles of the circle, and the composition gradient occurs in two direction along either side of the
+circle in between. For Nelder Fan designs with \code{max angle < 360}, the composition gradient occurs in one
+direction between monoculture extremes at either edge of the design.
 }
 \examples{
 nelder.design <- nelder(DN = 1000, D1 = 3000, N = 5)
