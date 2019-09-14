@@ -45,13 +45,13 @@ goelz <- function(N     = 35,
                   reps  = 1,
                   split = FALSE) {
 
-  if(!(is.numeric(N) & length(N) == 1))       stop("N must be numeric and of length 1",                          call. = FALSE)
+  if(!(is.numeric(N) & length(N) == 1))       stop("N must be numeric and of length 1",    call. = FALSE)
   if(goelz_count(N = N)$remainder.3 != 0)     stop(paste0("A triangle with N = ", N,
                                                           " does not have a number of points divisible by 3. ",
                                                           "Please use a differnet N."), call. = FALSE)
-  if(N < 5)                                   stop("N must be greater than 5 to create a useful Goelz Triangle", call. = FALSE)
-  if(!(is.numeric(reps) & length(reps) == 1)) stop("reps must be numeric and of length 1",                       call. = FALSE)
-  if(!is.logical(split))                      stop("split must be a logical",                                    call. = FALSE)
+  if(N < 5) stop("N must be greater than 5 to create a useful Goelz Triangle",             call. = FALSE)
+  if(!(is.numeric(reps) & length(reps) == 1)) stop("reps must be numeric and of length 1", call. = FALSE)
+  if(!is.logical(split))                      stop("split must be a logical",              call. = FALSE)
 
   L <- seq(from = 0, to = 100, length.out = N)
   SPECIES <- 1:3
@@ -560,6 +560,12 @@ goelz_starts <- function(data) {
   return(out)
 }
 
+#' Calculate fitness of Goelz Trianlge design
+#' @description Calculates fitness of Goelz Trianlge design.
+#' Used by \code{\link{goelz_optim}} as the fitness function.
+#' @return A numeric value.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @importFrom dplyr %>%
 goelz_fitness <- function(design, triangle) {
   design <- triangle %>%
     dplyr::filter(zone == "A") %>%
@@ -588,6 +594,10 @@ goelz_fitness <- function(design, triangle) {
   return(sum(se))
 }
 
+#' Annotate population with fitness and stats
+#' @description Annotates population with fitness and stats. Used by \code{\link{goelz_optim}}.
+#' @return A popluation matrixs.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 annotate_pop <- function(population, fitness, gens, gen.ids) {
   for(i in seq_along(population)) {
     attr(population[[i]], "fitness")    <- fitness[, i]
@@ -597,6 +607,11 @@ annotate_pop <- function(population, fitness, gens, gen.ids) {
   return(population)
 }
 
+#' Compile popluation data
+#' @description Compiles popluation data. Used by \code{\link{goelz_optim}}.
+#' @return A list.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @importFrom dplyr %>%
 compile_pop <- function(pop, fit, triangle, GEN) {
 
   orig.gen <- pop %>%
@@ -633,6 +648,11 @@ compile_pop <- function(pop, fit, triangle, GEN) {
   return(list(stats = stats, data = data))
 }
 
+#' Add one
+#' @description Adds one.
+#' Used by \code{\link{goelz}}, \code{\link{goelz_add_border}}, and \code{\link{A_to_triangle}}.
+#' @return A numeric vector.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 add_one <- function(x) {
   x[x == 3] <- 4
   x[x == 2] <- 3
@@ -641,6 +661,12 @@ add_one <- function(x) {
   return(x)
 }
 
+#' Apply symmetry from one trianlge region across other two regions.
+#' @description Applies symmetry from one trianlge region across other two regions.
+#' Used by \code{\link{goelz}}.
+#' @return A list.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @importFrom dplyr %>%
 A_to_triangle <- function(triangle, A.species) {
   A.design <- triangle %>%
     dplyr::filter(zone == "A") %>%
@@ -660,6 +686,12 @@ A_to_triangle <- function(triangle, A.species) {
   return(list(dplyr::bind_rows(A.design, B.design, C.design)))
 }
 
+#' Remove edge
+#' @description Removes edge.
+#' Used by \code{\link{goelz_mirror}}.
+#' @return An object of class "goelz".
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @importFrom dplyr %>%
 remove_edge <- function(data, side, n) {
   if(side == "right") func <- max else func <- min
   for(i in 1:n) {
@@ -671,6 +703,10 @@ remove_edge <- function(data, side, n) {
   return(data)
 }
 
+#' Count total plants in Goelz Triangle design.
+#' @description Counts total plants in Goelz Triangle design. Used by \code{\link{goelz}}.
+#' @return A data frame (tibble).
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 goelz_count <- function(N) {
   count_func <- function(x) sum(1:x)
   out <- dplyr::tibble(N            = N,
@@ -679,6 +715,10 @@ goelz_count <- function(N) {
   return(out)
 }
 
+#' Check if "goelz" object contains only a single Goelz Triangle
+#' @description Checks if "goelz" object contains only a single Goelz Triangle. Used by \code{\link{goelz_add_border}}.
+#' @return An object of class "goelz".
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 goelz_single_check <- function(data) {
   if(!is.data.frame(data)){
     if(length(data) == 1) data <- data[[1]] else stop("data must contain only a single goelz triangle", call. = FALSE)
@@ -686,6 +726,10 @@ goelz_single_check <- function(data) {
   return(data)
 }
 
+#' Check if an object if of class "goelz"
+#' @description Checks if an object if of class "goelz". Used by many goelz definition functions.
+#' @return An error.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 goelz_class_check <- function(data) {
   if(!("goelz" %in% class(data))) {
     if("goelz-split" %in% class(data)) {
