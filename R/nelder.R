@@ -233,6 +233,100 @@ nelder_biculture <- function(design, comps = NULL) {
 }
 
 
+#' Calculate competition indices for a Nelder Fan experimental design
+#' @description Calculates competition indices for a Nelder Fan experimental design.
+#' @return A data frame (tibble), which is the \code{plants} element of the "nelder" object passed to \code{design},
+#' but with 4 additioanl columns:
+#' \itemize{
+#'  \item{"A.inv.dist"}{ - The inverse distance weighted competition felt by that individual due to nearby individuals
+#'  of species A}
+#'  \item{"B.inv.dist"}{ - The inverse distance weighted competition felt by that individual due to nearby individuals
+#'  of species B}
+#'  \item{"A.neighbors"}{ - The number of directly adjacent individuals of species A}
+#'  \item{"B.neighbors"}{ - The number of directly adjacent individuals of species B}
+#' }
+#' @param design An object of class "nelder"
+#' @param search.radius Search radius to use for calculating inverse distance weighted competition (m). If \code{NULL},
+#' the default, then inverse distance weighted competition is not calculated.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @export
+#' @importFrom dplyr %>%
+#' @family definition functions
+#' @examples
+#' dat <- nelder(DN         = 1000,
+#'               D1         = 3000,
+#'               N          = 5,
+#'               tau        = 1,
+#'               even       = TRUE,
+#'               max.angle  = 360)
+#' dat.bi <- nelder_biculture(dat)
+#' nelder_biculture_competition(dat.bi)
+nelder_biculture_competition <- function(design, search.radius = NULL) {
+
+  design$plants$A.inv.dist  <- NA_real_
+  design$plants$B.inv.dist  <- NA_real_
+  design$plants$A.neighbors <- NA_real_
+  design$plants$B.neighbors <- NA_real_
+
+  design$plants$search.radius <- search.radius
+
+  for(i in 1:nrow(design$plants)) {
+    focal.indiv <- design$plants[i, ]
+
+    if(!is.null(search.radius)) {
+      ## Inverse Distance
+      X <- focal.indiv$x
+      Y <- focal.indiv$y
+
+      inverse.distance <- design$plants[-i, ] %>%
+        dplyr::mutate(d = sqrt((x - X)^2 + (y - Y)^2)) %>%
+        dplyr::filter(d <= search.radius) %>%
+        dplyr::mutate(id = 1 / (1 + d)) %>%
+        dplyr::group_by(species) %>%
+        dplyr::summarize(id = sum(id)) %>%
+        tidyr::spread(key = "species", value = "id")
+
+      if(!("A" %in% names(inverse.distance))) inverse.distance$A <- 0
+      if(!("B" %in% names(inverse.distance))) inverse.distance$B <- 0
+
+      design$plants$A.inv.dist[i] <- inverse.distance$A
+      design$plants$B.inv.dist[i] <- inverse.distance$B
+    }
+
+    ## Neighbor Counts
+    s <- focal.indiv$spoke
+    a <- focal.indiv$arc
+
+    neighbor.spokes <- c(s - 1, s, s + 1)
+    neighbor.arcs   <- c(a - 1, a, a + 1)
+
+    if(design$plot$max.angle == 360) {
+      neighbor.spokes[neighbor.spokes < 1] <- neighbor.spokes[neighbor.spokes < 1] + design$plot$spokes
+      neighbor.spokes[neighbor.spokes > design$plot$spokes] <- neighbor.spokes[neighbor.spokes > design$plot$spokes] - design$plot$spokes
+    } else {
+      neighbor.spokes[neighbor.spokes < 1] <- NA
+      neighbor.spokes[neighbor.spokes > design$plot$spokes] <- NA
+    }
+
+    neighbor.arcs[neighbor.arcs < 0] <- NA
+    neighbor.arcs[neighbor.arcs > (design$plot$arcs - 1)] <- NA
+
+    neighbors <- design$plants[-i, ] %>%
+      dplyr::filter(arc   %in% neighbor.arcs) %>%
+      dplyr::filter(spoke %in% neighbor.spokes) %>%
+      dplyr::summarize(A = sum(species == "A"),
+                       B = sum(species == "B"))
+
+    if(!(a %in% c(0, design$plot$arcs - 1))) {
+      design$plants$A.neighbors[i] <- neighbors$A
+      design$plants$B.neighbors[i] <- neighbors$B
+    }
+  }
+
+  return(design$plants)
+}
+
+
 #' Calculate Nelder Fan design
 #' @description Calculates Nelder Fan design
 #' Used within \code{\link{nelder}}.
