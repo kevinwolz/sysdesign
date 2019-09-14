@@ -489,28 +489,74 @@ goelz_optim <- function(N        = 35,
   return(list(stats = pop.stats, data = pop.data))
 }
 
+#' Get coordinates of corners of Goelz Triangle experimental design
+#' @description Gets coordinates of corners of Goelz Triangle experimental design.
+#' @return A data frame (tibble).
+#' @param data An object of class "goelz".
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @export
+#' @importFrom dplyr %>%
+#' @family definition functions
+#' @examples
+#' dat <- goelz()
+#' goelz_corners(data = dat)
 goelz_corners <- function(data) {
+  goelz_class_check(data)
+
   x.range <- range(round(data$x.field, 2))
   y.range <- range(round(data$y.field, 2))
+
   out <- expand.grid(x.field = x.range, y.field = y.range) %>%
-    dplyr::arrange(x.field, y.field)
+    dplyr::arrange(x.field, y.field) %>%
+    dplyr::as_tibble()
+
   return(out)
 }
 
+#' Get coordinates of guides for Goelz Triangle experimental design
+#' @description Gets coordinates of guides for Goelz Triangle experimental design.
+#' @return A data frame (tibble).
+#' @param data An object of class "goelz".
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @export
+#' @importFrom dplyr %>%
+#' @family definition functions
+#' @examples
+#' dat <- goelz()
+#' goelz_guides(data = dat)
 goelz_guides <- function(data) {
+  goelz_class_check(data)
+
   x.range  <- range(round(data$x.field, 2))
   x.range <- c(x.range, x.range[1] + diff(x.range) / 3, x.range[2] - diff(x.range) / 3)
   y.unique <- unique(round(data$y.field, 2))
+
   out <- expand.grid(x.field = x.range, y.field = y.unique) %>%
     dplyr::arrange(x.field, y.field)
+
   return(out)
 }
 
+#' Get coordinates of row starts for Goelz Triangle experimental design
+#' @description Gets coordinates of row starts for Goelz Triangle experimental design.
+#' @return A data frame (tibble).
+#' @param data An object of class "goelz".
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @export
+#' @importFrom dplyr %>%
+#' @family definition functions
+#' @examples
+#' dat <- goelz()
+#' goelz_starts(data = dat)
 goelz_starts <- function(data) {
+
+  goelz_class_check(data)
+
   out <- data %>%
     dplyr::filter(x.pos == 1) %>%
     dplyr::select(x.pos, y.pos, x.field, y.field) %>%
     dplyr::mutate(y.field = round(y.field, 2))
+
   return(out)
 }
 

@@ -2,8 +2,11 @@
 
 export(goelz)
 export(goelz_add_border)
+export(goelz_corners)
+export(goelz_guides)
 export(goelz_mirror)
 export(goelz_optim)
+export(goelz_starts)
 export(nelder)
 export(nelder_biculture)
 export(nelder_decision)

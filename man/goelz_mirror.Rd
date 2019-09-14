@@ -42,8 +42,9 @@ dat.border.mirror <- goelz_mirror(data = dat.border)
 }
 \seealso{
 Other definition functions: \code{\link{goelz_add_border}},
-  \code{\link{goelz_optim}}, \code{\link{goelz}},
-  \code{\link{nelder_biculture}},
+  \code{\link{goelz_corners}}, \code{\link{goelz_guides}},
+  \code{\link{goelz_optim}}, \code{\link{goelz_starts}},
+  \code{\link{goelz}}, \code{\link{nelder_biculture}},
   \code{\link{nelder_decision}}, \code{\link{nelder}}
 }
 \author{
