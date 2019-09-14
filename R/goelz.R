@@ -343,10 +343,10 @@ goelz_mirror <- function(data, joining.borders = max(data$border.num, na.rm = TR
 
   data.mirrored <- data.mirrored %>%
     dplyr::mutate(triangle = "B") %>%
-    dplyr::mutate(x.pos   = x.pos - (borders.to.remove - 1)) %>%
-    dplyr::mutate(y.pos   = y.pos + y.pos.shift) %>%
-    dplyr::mutate(x.field = x.field - borders.to.remove + 0.5) %>%
-    dplyr::mutate(y.field = y.field + (y.pos.shift * sqrt(3) / 2))
+    dplyr::mutate(x.pos    = x.pos - (borders.to.remove - 1)) %>%
+    dplyr::mutate(y.pos    = y.pos + y.pos.shift) %>%
+    dplyr::mutate(x.field  = x.field - borders.to.remove + 0.5) %>%
+    dplyr::mutate(y.field  = y.field + (y.pos.shift * sqrt(3) / 2))
 
   data.combine <- data %>%
     dplyr::mutate(triangle = "A") %>%
@@ -396,15 +396,16 @@ goelz_optim <- function(N        = 35,
                         P.RECOMB = 1,
                         RECOMB   = 0.1,
                         P.MUT    = 1,
-                        MUT      = 0.005) {# Probability of mutation of each gene
+                        MUT      = 0.005) {
+
+  if(!requireNamespace("ecr", quietly = TRUE)) stop("The package 'ecr' is required for goelz_optim().
+                                                    Please install and load it", call. = FALSE)
 
   ### GA CONTROLS
   mutInteger <- function (ind, p, lower, upper) {
-    assertInteger(lower, any.missing = FALSE, all.missing = FALSE)
-    assertInteger(upper, any.missing = FALSE, all.missing = FALSE)
-    if (length(lower) != length(upper)) {
-      stopf("Uniform mutator: length of lower and upper bounds need to be equal!")
-    }
+    if(!(is.ineger(lower) & length(lower) == 1)) stop("lower must be an integer of length 1",      call. = FALSE)
+    if(!(is.ineger(upper) & length(upper) == 1)) stop("upper must be an integer of length 1",      call. = FALSE)
+    if(length(lower) != length(upper)) stop("Length of lower and upper bounds need to be equal!", call. = FALSE)
 
     for(idx in 1:length(ind)) {
       available <- seq(from = lower, to = upper, by = 1)
@@ -529,7 +530,7 @@ goelz_guides <- function(data) {
   goelz_class_check(data)
 
   x.range  <- range(round(data$x.field, 2))
-  x.range <- c(x.range, x.range[1] + diff(x.range) / 3, x.range[2] - diff(x.range) / 3)
+  x.range  <- c(x.range, x.range[1] + diff(x.range) / 3, x.range[2] - diff(x.range) / 3)
   y.unique <- unique(round(data$y.field, 2))
 
   out <- expand.grid(x.field = x.range, y.field = y.unique) %>%
