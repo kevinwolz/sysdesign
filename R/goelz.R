@@ -15,7 +15,7 @@
 #' by sampling the three species using weights based on the theoretical probability of each species at that point.
 #' For a robust implementation of the conformity criterion that optimizes the rough initial approach of this function
 #' using an evolutionary algorithm, use \code{\link{goelz_optim}}.
-#' @return An object of class "sysd" and class "goelz".
+#' @return An object of class sysd and class goelz.
 #' If \code{split = FALSE}, this is a list of data frames (tibbles) containing one row for each for each plant in
 #' the design. The length of the list is equal to \code{reps}. If \code{split = TRUE}, this is a list of three elements:
 #' \itemize{
@@ -146,8 +146,8 @@ goelz <- function(N     = 35,
 #' 50:50 probability of the species in the two adjacent spots towards the interior of the triangle. This is the method
 #' used here, with each additional border row being determined successively. The border rows are also held to the same
 #' standard of symmetry across the three zones in the triangle.
-#' @return An object of class "goelz".
-#' @param data An object of class "sysd", "goelz", and "goelz-border".
+#' @return An object of class goelz.
+#' @param data An object of class goelz, goelz, and goelz-border.
 #' @param n The number of border rows to add on each side of the design.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @references
@@ -294,8 +294,8 @@ goelz_add_border <- function(data, n) {
 #' border rows to maintain betwen the two triangles via the \code{joining.borders} argument. The default is to maintain
 #' only the number of border rows that each triangle originally had (i.e. half the number of borders initially
 #' between the two triangles when merging them.)
-#' @return An object of class "sysd", "goelz", and "goelz-mirror".
-#' @param data An object of class "goelz".
+#' @return An object of class sysd, goelz, and goelz-mirror.
+#' @param data An object of class goelz.
 #' @param joining.borders The number of border rows to maintain between the two triangles.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @references
@@ -493,7 +493,7 @@ goelz_optim <- function(N        = 35,
 #' Get coordinates of corners of Goelz Triangle experimental design
 #' @description Gets coordinates of corners of Goelz Triangle experimental design.
 #' @return A data frame (tibble).
-#' @param data An object of class "goelz".
+#' @param data An object of class goelz.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @export
 #' @importFrom dplyr %>%
@@ -517,7 +517,7 @@ goelz_corners <- function(data) {
 #' Get coordinates of guides for Goelz Triangle experimental design
 #' @description Gets coordinates of guides for Goelz Triangle experimental design.
 #' @return A data frame (tibble).
-#' @param data An object of class "goelz".
+#' @param data An object of class goelz.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @export
 #' @importFrom dplyr %>%
@@ -541,7 +541,7 @@ goelz_guides <- function(data) {
 #' Get coordinates of row starts for Goelz Triangle experimental design
 #' @description Gets coordinates of row starts for Goelz Triangle experimental design.
 #' @return A data frame (tibble).
-#' @param data An object of class "goelz".
+#' @param data An object of class goelz.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @export
 #' @importFrom dplyr %>%
@@ -690,7 +690,7 @@ A_to_triangle <- function(triangle, A.species) {
 #' Remove edge
 #' @description Removes edge.
 #' Used by \code{\link{goelz_mirror}}.
-#' @return An object of class "goelz".
+#' @return An object of class goelz.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @importFrom dplyr %>%
 remove_edge <- function(data, side, n) {
@@ -716,9 +716,9 @@ goelz_count <- function(N) {
   return(out)
 }
 
-#' Check if "goelz" object contains only a single Goelz Triangle
-#' @description Checks if "goelz" object contains only a single Goelz Triangle. Used by \code{\link{goelz_add_border}}.
-#' @return An object of class "goelz".
+#' Check if goelz object contains only a single Goelz Triangle
+#' @description Checks if goelz object contains only a single Goelz Triangle. Used by \code{\link{goelz_add_border}}.
+#' @return An object of class goelz.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 goelz_single_check <- function(data) {
   if(!is.data.frame(data)){
@@ -727,8 +727,8 @@ goelz_single_check <- function(data) {
   return(data)
 }
 
-#' Check if an object if of class "goelz"
-#' @description Checks if an object if of class "goelz". Used by many goelz definition functions.
+#' Check if an object if of class goelz
+#' @description Checks if an object if of class goelz. Used by many goelz definition functions.
 #' @return An error.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 goelz_class_check <- function(data) {

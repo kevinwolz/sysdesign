@@ -2,7 +2,7 @@
 % Please edit documentation in R/goelz.R
 \name{goelz_class_check}
 \alias{goelz_class_check}
-\title{Check if an object if of class "goelz"}
+\title{Check if an object if of class goelz}
 \usage{
 goelz_class_check(data)
 }
@@ -10,7 +10,7 @@ goelz_class_check(data)
 An error.
 }
 \description{
-Checks if an object if of class "goelz". Used by many goelz definition functions.
+Checks if an object if of class goelz. Used by many goelz definition functions.
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}

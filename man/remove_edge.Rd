@@ -7,7 +7,7 @@
 remove_edge(data, side, n)
 }
 \value{
-An object of class "goelz".
+An object of class goelz.
 }
 \description{
 Removes edge.

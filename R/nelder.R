@@ -4,7 +4,7 @@
 #' systematically varies plant desnity within a single plot. This function creates Nelder Fan Type Ia (Nelder 1962),
 #' where the growing area around each plant has a constant shape throughout the design but increases as radius increases.
 #' The terminology and calculations used here follow Parrott, Brinks, and Lhotka (2012).
-#' @return An object of class "sysd" and class "nelder". This is a list of 3 elements:
+#' @return An object of class sysd and class nelder. This is a list of 3 elements:
 #' \itemize{
 #'  \item{"plants"}{ - A data frame (tibble) containing one row for each for each plant in the design.}
 #'  \item{"plot"}{ - A data frame (tibble) containing plot charateristics.}
@@ -13,10 +13,10 @@
 #'  If \code{even = FALSE}, then \code{FALSE}.}
 #' }
 #' @param DN Plant density within the last experimental arc (plants ha-1)
-#' (i.e. lower extreme of experimental plant density range)
+#' (i.e. lower extreme of experimental plant density range).
 #' @param D1 Plant density within the first experimental arc (plants ha-1)
-#' (i.e. upper extreme of experimental plant density range)
-#' @param N Number of experimental arcs (i.e. number of densities to be tested within D1 to DN)
+#' (i.e. upper extreme of experimental plant density range).
+#' @param N Number of experimental arcs (i.e. number of densities to be tested within D1 to DN).
 #' @param tau The "rectangularity" proportion. "Rectangularity" is the proportional relationship between the arc length
 #' between spokes and the radial length between arcs, where the numerator represents the arc length and the denominator
 #' represents radial distance. This proportion has been referred to as "rectangularity" in the historical literature
@@ -116,10 +116,10 @@ nelder <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
 #' \code{\link{nelder}} for evaluation. Inputs and outputs are all combined and returned for evaluation.
 #' @return A tibble containing a wide range of traits of the experimental designs.
 #' @param DN Plant density within the last experimental arc (plants ha-1)
-#' (i.e. lower extreme of experimental plant density range)
+#' (i.e. lower extreme of experimental plant density range).
 #' @param D1 Plant density within the first experimental arc (plants ha-1)
-#' (i.e. upper extreme of experimental plant density range)
-#' @param N Number of experimental arcs (i.e. number of densities to be tested within D1 to DN)
+#' (i.e. upper extreme of experimental plant density range).
+#' @param N Number of experimental arcs (i.e. number of densities to be tested within D1 to DN).
 #' @param tau The "rectangularity" proportion. See \code{\link{nelder}} for details.
 #' @param even Logical indicated whether or not the design should be adjusted so that the angle between spokes goes
 #' evenly into \code{max.angle} (i.e. so that there are no spokes that must be removed from the experiment as border
@@ -163,13 +163,13 @@ nelder_decision <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
 #' set to opposite poles of the circle, and the composition gradient occurs in two direction along either side of the
 #' circle in between. For Nelder Fan designs with \code{max angle < 360}, the composition gradient occurs in one
 #' direction between monoculture extremes at either edge of the design.
-#' @return An object of classes "sysd", "nelder", and "biculture". This is a list of 5 elements,
+#' @return An object of classes sysd, nelder, and nelder-biculture. This is a list of 5 elements,
 #' the first 3 of which are the same as for \code{\link{nelder}}, and the last 2 of which are:
 #' \itemize{
 #'  \item{"species.counts"}{ - An abject of class "table" containing the total counts of each species in the design.}
 #'  \item{"spoke.composition"}{ - A data frame (tibble) containing the ratio and counts of each species by spoke.}
 #' }
-#' @param design An object of class "nelder" created by \code{\link{nelder}}.
+#' @param design An object of class nelder created by \code{\link{nelder}}.
 #' @param comps An option numeric vector containing the ratios of one species in each spoke.
 #' This can effectively be used to create non-standard bi-culture designs that deviate from the Goelz (2001) approach.
 #' If \code{NULL}, the default, then a linear
@@ -228,14 +228,14 @@ nelder_biculture <- function(design, comps = NULL) {
                                             A.count = quants,
                                             B.count = design$plot$arcs - A.count)
 
-  class(design) <- c(class(design), "biculture")
+  class(design) <- c(class(design), "nelder-biculture")
   return(design)
 }
 
 
 #' Calculate competition indices for a Nelder Fan experimental design
 #' @description Calculates competition indices for a Nelder Fan experimental design.
-#' @return A data frame (tibble), which is the \code{plants} element of the "nelder" object passed to \code{design},
+#' @return A data frame (tibble), which is the \code{plants} element of the nelder object passed to \code{design},
 #' but with 4 additioanl columns:
 #' \itemize{
 #'  \item{"A.inv.dist"}{ - The inverse distance weighted competition felt by that individual due to nearby individuals
@@ -245,7 +245,7 @@ nelder_biculture <- function(design, comps = NULL) {
 #'  \item{"A.neighbors"}{ - The number of directly adjacent individuals of species A}
 #'  \item{"B.neighbors"}{ - The number of directly adjacent individuals of species B}
 #' }
-#' @param design An object of class "nelder"
+#' @param design An object of class nelder.
 #' @param search.radius Search radius to use for calculating inverse distance weighted competition (m). If \code{NULL},
 #' the default, then inverse distance weighted competition is not calculated.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
@@ -328,15 +328,15 @@ nelder_biculture_competition <- function(design, search.radius = NULL) {
 
 
 #' Calculate Nelder Fan design
-#' @description Calculates Nelder Fan design
+#' @description Calculates Nelder Fan design.
 #' Used within \code{\link{nelder}}.
 #' @return A list containing the plant and plot data.
 #' @param alpha Rate of change along the spokes.
 #' @param theta The angle between the spokes.
 #' @param tau The "rectangularity" proportion
 #' @param D1 Plant density within the first experimental arc (plants ha-1)
-#' (i.e. upper extreme of experimental plant density range)
-#' @param N Number of experimental arcs (i.e. number of densities to be tested within D1 to DN)
+#' (i.e. upper extreme of experimental plant density range).
+#' @param N Number of experimental arcs (i.e. number of densities to be tested within D1 to DN).
 #' @param max.angle The maximum rotation (in degrees) of the design. If 360, then a full circle design will be created.
 #' @param n.spokes The number of spokes.
 #' @param spoke.borders Logical indicating whether or not there are spokes required to be border spokes.

@@ -7,7 +7,7 @@
 goelz_guides(data)
 }
 \arguments{
-\item{data}{An object of class "goelz".}
+\item{data}{An object of class goelz.}
 }
 \value{
 A data frame (tibble).

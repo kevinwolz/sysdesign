@@ -7,13 +7,13 @@
 nelder_biculture_competition(design, search.radius = NULL)
 }
 \arguments{
-\item{design}{An object of class "nelder"}
+\item{design}{An object of class nelder.}
 
 \item{search.radius}{Search radius to use for calculating inverse distance weighted competition (m). If \code{NULL},
 the default, then inverse distance weighted competition is not calculated.}
 }
 \value{
-A data frame (tibble), which is the \code{plants} element of the "nelder" object passed to \code{design},
+A data frame (tibble), which is the \code{plants} element of the nelder object passed to \code{design},
 but with 4 additioanl columns:
 \itemize{
  \item{"A.inv.dist"}{ - The inverse distance weighted competition felt by that individual due to nearby individuals

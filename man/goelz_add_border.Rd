@@ -7,12 +7,12 @@
 goelz_add_border(data, n)
 }
 \arguments{
-\item{data}{An object of class "sysd", "goelz", and "goelz-border".}
+\item{data}{An object of class goelz, goelz, and goelz-border.}
 
 \item{n}{The number of border rows to add on each side of the design.}
 }
 \value{
-An object of class "goelz".
+An object of class goelz.
 }
 \description{
 Adds border rows to a Goelz Triangle experimental design.

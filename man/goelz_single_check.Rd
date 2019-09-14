@@ -2,15 +2,15 @@
 % Please edit documentation in R/goelz.R
 \name{goelz_single_check}
 \alias{goelz_single_check}
-\title{Check if "goelz" object contains only a single Goelz Triangle}
+\title{Check if goelz object contains only a single Goelz Triangle}
 \usage{
 goelz_single_check(data)
 }
 \value{
-An object of class "goelz".
+An object of class goelz.
 }
 \description{
-Checks if "goelz" object contains only a single Goelz Triangle. Used by \code{\link{goelz_add_border}}.
+Checks if goelz object contains only a single Goelz Triangle. Used by \code{\link{goelz_add_border}}.
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}

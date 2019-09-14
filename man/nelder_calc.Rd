@@ -14,9 +14,9 @@ nelder_calc(alpha, theta, tau, D1, N, max.angle, n.spokes, spoke.borders)
 \item{tau}{The "rectangularity" proportion}
 
 \item{D1}{Plant density within the first experimental arc (plants ha-1)
-(i.e. upper extreme of experimental plant density range)}
+(i.e. upper extreme of experimental plant density range).}
 
-\item{N}{Number of experimental arcs (i.e. number of densities to be tested within D1 to DN)}
+\item{N}{Number of experimental arcs (i.e. number of densities to be tested within D1 to DN).}
 
 \item{max.angle}{The maximum rotation (in degrees) of the design. If 360, then a full circle design will be created.}
 
@@ -28,7 +28,7 @@ nelder_calc(alpha, theta, tau, D1, N, max.angle, n.spokes, spoke.borders)
 A list containing the plant and plot data.
 }
 \description{
-Calculates Nelder Fan design
+Calculates Nelder Fan design.
 Used within \code{\link{nelder}}.
 }
 \keyword{internal}

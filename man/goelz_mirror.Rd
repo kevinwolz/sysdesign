@@ -7,12 +7,12 @@
 goelz_mirror(data, joining.borders = max(data$border.num, na.rm = TRUE))
 }
 \arguments{
-\item{data}{An object of class "goelz".}
+\item{data}{An object of class goelz.}
 
 \item{joining.borders}{The number of border rows to maintain between the two triangles.}
 }
 \value{
-An object of class "sysd", "goelz", and "goelz-mirror".
+An object of class sysd, goelz, and goelz-mirror.
 }
 \description{
 Mirrors a Goelz Triangle experimental design and combines it with the original design to create a

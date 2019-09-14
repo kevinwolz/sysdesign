@@ -14,7 +14,7 @@ goelz(N = 35, reps = 1, split = FALSE)
 \item{split}{A logical indicating whether the result should be in "split" format or not.}
 }
 \value{
-An object of class "sysd" and class "goelz".
+An object of class sysd and class goelz.
 If \code{split = FALSE}, this is a list of data frames (tibbles) containing one row for each for each plant in
 the design. The length of the list is equal to \code{reps}. If \code{split = TRUE}, this is a list of three elements:
 \itemize{

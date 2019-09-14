@@ -8,12 +8,12 @@ nelder(DN, D1, N, tau = 1, even = FALSE, max.angle = 360)
 }
 \arguments{
 \item{DN}{Plant density within the last experimental arc (plants ha-1)
-(i.e. lower extreme of experimental plant density range)}
+(i.e. lower extreme of experimental plant density range).}
 
 \item{D1}{Plant density within the first experimental arc (plants ha-1)
-(i.e. upper extreme of experimental plant density range)}
+(i.e. upper extreme of experimental plant density range).}
 
-\item{N}{Number of experimental arcs (i.e. number of densities to be tested within D1 to DN)}
+\item{N}{Number of experimental arcs (i.e. number of densities to be tested within D1 to DN).}
 
 \item{tau}{The "rectangularity" proportion. "Rectangularity" is the proportional relationship between the arc length
 between spokes and the radial length between arcs, where the numerator represents the arc length and the denominator
@@ -29,7 +29,7 @@ spokes).}
 \item{max.angle}{The maximum rotation (in degrees) of the design. If 360, then a full circle design will be created.}
 }
 \value{
-An object of class "sysd" and class "nelder". This is a list of 3 elements:
+An object of class sysd and class nelder. This is a list of 3 elements:
 \itemize{
  \item{"plants"}{ - A data frame (tibble) containing one row for each for each plant in the design.}
  \item{"plot"}{ - A data frame (tibble) containing plot charateristics.}
