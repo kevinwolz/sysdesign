@@ -7,21 +7,24 @@
 nelder(DN, D1, N, tau = 1, even = FALSE, max.angle = 360)
 }
 \arguments{
-\item{DN}{Plant density within the last experimental arc (plants ha-1) (i.e. lower extreme of experimental plant density range)}
+\item{DN}{Plant density within the last experimental arc (plants ha-1)
+(i.e. lower extreme of experimental plant density range)}
 
-\item{D1}{Plant density within the first experimental arc (plants ha-1) (i.e. upper extreme of experimental plant density range)}
+\item{D1}{Plant density within the first experimental arc (plants ha-1)
+(i.e. upper extreme of experimental plant density range)}
 
 \item{N}{Number of experimental arcs (i.e. number of densities to be tested within D1 to DN)}
 
-\item{tau}{The "rectangularity" proportion. "Rectangularity" is the proportional relationship between the arc length between
-spokes and the radial length between arcs, where the numerator represents the arc length and the denominator represents
-radial distance. This proportion has been referred to as "rectangularity" in the historical literature and it remains constant
-throughout the design. Given that the inner and outer borders of the growing space shape surrounding a plant in a Nelder
-design are arcs, and that the shape is not truly rectangular or trapezoidal in nature, the term "rectangularity" can be
-confusing.}
+\item{tau}{The "rectangularity" proportion. "Rectangularity" is the proportional relationship between the arc length
+between spokes and the radial length between arcs, where the numerator represents the arc length and the denominator
+represents radial distance. This proportion has been referred to as "rectangularity" in the historical literature
+and it remains constant throughout the design. Given that the inner and outer borders of the growing space shape
+surrounding a plant in a Nelder design are arcs, and that the shape is not truly rectangular or trapezoidal in
+nature, the term "rectangularity" can be confusing.}
 
-\item{even}{Logical indicated whether or not the design should be adjusted so that the angle between spokes goes evenly
-into \code{max.angle} (i.e. so that there are no spokes that must be removed from the experiment as border spokes).}
+\item{even}{Logical indicated whether or not the design should be adjusted so that the angle between spokes goes
+evenly into \code{max.angle} (i.e. so that there are no spokes that must be removed from the experiment as border
+spokes).}
 
 \item{max.angle}{The maximum rotation (in degrees) of the design. If 360, then a full circle design will be created.}
 }
@@ -30,8 +33,8 @@ An object of class "sysd" and class "nelder". This is a list of 3 elements:
 \itemize{
  \item{"plants"}{ - A data frame (tibble) containing one row for each for each plant in the design.}
  \item{"plot"}{ - A data frame (tibble) containing plot charateristics.}
- \item{"optim"}{ - If \code{even = TRUE}, a data frame (tibble) comparing plot characteristics between the scenario
- where theta is even throughout the design and the scenario where theta is uneven.
+ \item{"even.optim"}{ - If \code{even = TRUE}, a data frame (tibble) comparing plot characteristics between
+ the scenario where theta is even throughout the design and the scenario where theta is uneven.
  If \code{even = FALSE}, then \code{FALSE}.}
 }
 }
@@ -39,9 +42,9 @@ An object of class "sysd" and class "nelder". This is a list of 3 elements:
 Creates a Nelder Fan experimental design.
 }
 \details{
-The Nelder Fan or Nelder Wheel experimental design (Nelder 1962) is an experimental design that systematically
-varies plant desnity within a single plot. This function creates Nelder Fan Type Ia (Nelder 1962), where the growing area
-around each plant has a constant shape throughout the design but increases as radius increases.
+The Nelder Fan or Nelder Wheel experimental design (Nelder 1962) is an experimental design that
+systematically varies plant desnity within a single plot. This function creates Nelder Fan Type Ia (Nelder 1962),
+where the growing area around each plant has a constant shape throughout the design but increases as radius increases.
 The terminology and calculations used here follow Parrott, Brinks, and Lhotka (2012).
 }
 \examples{

@@ -1,28 +1,31 @@
 #' Create a Nelder Fan experimental design
 #' @description Creates a Nelder Fan experimental design.
-#' @details The Nelder Fan or Nelder Wheel experimental design (Nelder 1962) is an experimental design that systematically
-#' varies plant desnity within a single plot. This function creates Nelder Fan Type Ia (Nelder 1962), where the growing area
-#' around each plant has a constant shape throughout the design but increases as radius increases.
+#' @details The Nelder Fan or Nelder Wheel experimental design (Nelder 1962) is an experimental design that
+#' systematically varies plant desnity within a single plot. This function creates Nelder Fan Type Ia (Nelder 1962),
+#' where the growing area around each plant has a constant shape throughout the design but increases as radius increases.
 #' The terminology and calculations used here follow Parrott, Brinks, and Lhotka (2012).
 #' @return An object of class "sysd" and class "nelder". This is a list of 3 elements:
 #' \itemize{
 #'  \item{"plants"}{ - A data frame (tibble) containing one row for each for each plant in the design.}
 #'  \item{"plot"}{ - A data frame (tibble) containing plot charateristics.}
-#'  \item{"optim"}{ - If \code{even = TRUE}, a data frame (tibble) comparing plot characteristics between the scenario
-#'  where theta is even throughout the design and the scenario where theta is uneven.
+#'  \item{"even.optim"}{ - If \code{even = TRUE}, a data frame (tibble) comparing plot characteristics between
+#'  the scenario where theta is even throughout the design and the scenario where theta is uneven.
 #'  If \code{even = FALSE}, then \code{FALSE}.}
 #' }
-#' @param DN Plant density within the last experimental arc (plants ha-1) (i.e. lower extreme of experimental plant density range)
-#' @param D1 Plant density within the first experimental arc (plants ha-1) (i.e. upper extreme of experimental plant density range)
+#' @param DN Plant density within the last experimental arc (plants ha-1)
+#' (i.e. lower extreme of experimental plant density range)
+#' @param D1 Plant density within the first experimental arc (plants ha-1)
+#' (i.e. upper extreme of experimental plant density range)
 #' @param N Number of experimental arcs (i.e. number of densities to be tested within D1 to DN)
-#' @param tau The "rectangularity" proportion. "Rectangularity" is the proportional relationship between the arc length between
-#'  spokes and the radial length between arcs, where the numerator represents the arc length and the denominator represents
-#'  radial distance. This proportion has been referred to as "rectangularity" in the historical literature and it remains constant
-#'  throughout the design. Given that the inner and outer borders of the growing space shape surrounding a plant in a Nelder
-#'  design are arcs, and that the shape is not truly rectangular or trapezoidal in nature, the term "rectangularity" can be
-#'  confusing.
-#' @param even Logical indicated whether or not the design should be adjusted so that the angle between spokes goes evenly
-#' into \code{max.angle} (i.e. so that there are no spokes that must be removed from the experiment as border spokes).
+#' @param tau The "rectangularity" proportion. "Rectangularity" is the proportional relationship between the arc length
+#' between spokes and the radial length between arcs, where the numerator represents the arc length and the denominator
+#' represents radial distance. This proportion has been referred to as "rectangularity" in the historical literature
+#' and it remains constant throughout the design. Given that the inner and outer borders of the growing space shape
+#' surrounding a plant in a Nelder design are arcs, and that the shape is not truly rectangular or trapezoidal in
+#' nature, the term "rectangularity" can be confusing.
+#' @param even Logical indicated whether or not the design should be adjusted so that the angle between spokes goes
+#' evenly into \code{max.angle} (i.e. so that there are no spokes that must be removed from the experiment as border
+#' spokes).
 #' @param max.angle The maximum rotation (in degrees) of the design. If 360, then a full circle design will be created.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @references
@@ -46,13 +49,14 @@
 #'                max.angle  = 360)
 nelder <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
 
-  if(!(is.numeric(D1) & (D1 %% 1 == 0) & length(D1) == 1))      stop("D1 must an integer and of length 1",           call. = FALSE)
-  if(!(is.numeric(DN) & (DN %% 1 == 0) & length(DN) == 1))      stop("DN must an integer and of length 1",           call. = FALSE)
-  if(!(is.numeric(N) & (N %% 1 == 0) & length(N) == 1 & N > 2)) stop("N must be an integer greater than 2",          call. = FALSE)
-  if(D1 <= DN)                                                  stop("D1 must be greater than DN",                   call. = FALSE)
-  if(!(is.numeric(tau) & length(tau) == 1))                     stop("tau argument must be numeric and of length 1", call. = FALSE)
-  if(!is.logical(even))                                         stop("even argument must be a logical",              call. = FALSE)
-  if(max.angle > 360 | max.angle <= 0)                          stop("max.angle argument must be between 0 and 360", call. = FALSE)
+  if(!(is.numeric(D1) & (D1 %% 1 == 0) & length(D1) == 1)) stop("D1 must an integer and of length 1", call. = FALSE)
+  if(!(is.numeric(DN) & (DN %% 1 == 0) & length(DN) == 1)) stop("DN must an integer and of length 1", call. = FALSE)
+  if(!(is.numeric(N) & (N %% 1 == 0) & length(N) == 1 & N > 2)) stop("N must be an integer greater than 2",
+                                                                     call. = FALSE)
+  if(D1 <= DN)                              stop("D1 must be greater than DN",                   call. = FALSE)
+  if(!(is.numeric(tau) & length(tau) == 1)) stop("tau argument must be numeric and of length 1", call. = FALSE)
+  if(!is.logical(even))                     stop("even argument must be a logical",              call. = FALSE)
+  if(max.angle > 360 | max.angle <= 0)      stop("max.angle argument must be between 0 and 360", call. = FALSE)
 
   max.angle.rad <- max.angle * pi / 180  # radians
 
@@ -93,10 +97,10 @@ nelder <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
       dplyr::mutate(even = c(FALSE, TRUE)) %>%
       dplyr::select(even, dplyr::everything())
 
-    out <- c(even.dat, list(optim = even.spoke.dat))
+    out <- c(even.dat, list(even.optim = even.spoke.dat))
 
   } else {
-    out <- c(orig.dat, list(optim = FALSE))
+    out <- c(orig.dat, list(even.optim = FALSE))
   }
 
   class(out) <- c(class(out), "nelder", "sysd")
@@ -106,16 +110,20 @@ nelder <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
 #' Create a Nelder Fan experimental design decision table
 #' @description Creates a Nelder Fan experimental design decision table.
 #' @details This function helps explore Nelder Fan design options and select a design that meets external constraints
-#' (e.g. plant or space availability). Function inputs are identical to \code{\link{nelder}}, but inputs of any length are allowed.
+#' (e.g. plant or space availability).
+#' Function inputs are identical to \code{\link{nelder}}, but inputs of any length are allowed.
 #' All possible combinations of inputs are created using \code{expand.grid}, and then each of these cases is passed to
 #' \code{\link{nelder}} for evaluation. Inputs and outputs are all combined and returned for evaluation.
 #' @return A tibble containing a wide range of traits of the experimental designs.
-#' @param DN Plant density within the last experimental arc (plants ha-1) (i.e. lower extreme of experimental plant density range)
-#' @param D1 Plant density within the first experimental arc (plants ha-1) (i.e. upper extreme of experimental plant density range)
+#' @param DN Plant density within the last experimental arc (plants ha-1)
+#' (i.e. lower extreme of experimental plant density range)
+#' @param D1 Plant density within the first experimental arc (plants ha-1)
+#' (i.e. upper extreme of experimental plant density range)
 #' @param N Number of experimental arcs (i.e. number of densities to be tested within D1 to DN)
 #' @param tau The "rectangularity" proportion. See \code{\link{nelder}} for details.
-#' @param even Logical indicated whether or not the design should be adjusted so that the angle between spokes goes evenly
-#' into \code{max.angle} (i.e. so that there are no spokes that must be removed from the experiment as border spokes).
+#' @param even Logical indicated whether or not the design should be adjusted so that the angle between spokes goes
+#' evenly into \code{max.angle} (i.e. so that there are no spokes that must be removed from the experiment as border
+#' spokes).
 #' @param max.angle The maximum rotation (in degrees) of the design. If 360, then a full circle design will be created.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @export
@@ -162,8 +170,9 @@ nelder_decision <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
 #'  \item{"spoke.composition"}{ - A data frame (tibble) containing the ratio and counts of each species by spoke.}
 #' }
 #' @param design An object of class "nelder" created by \code{\link{nelder}}.
-#' @param comps An option numeric vector containing the ratios of one species in each spoke. This can effectively be used to
-#' create non-standard bi-culture designs that deviate from the Goelz (2001) approach. If \code{NULL}, the default, then a linear
+#' @param comps An option numeric vector containing the ratios of one species in each spoke.
+#' This can effectively be used to create non-standard bi-culture designs that deviate from the Goelz (2001) approach.
+#' If \code{NULL}, the default, then a linear
 #' gradient of speies composition is used between monoculture extremes for each species.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @references
@@ -231,7 +240,8 @@ nelder_biculture <- function(design, comps = NULL) {
 #' @param alpha Rate of change along the spokes.
 #' @param theta The angle between the spokes.
 #' @param tau The "rectangularity" proportion
-#' @param D1 Plant density within the first experimental arc (plants ha-1) (i.e. upper extreme of experimental plant density range)
+#' @param D1 Plant density within the first experimental arc (plants ha-1)
+#' (i.e. upper extreme of experimental plant density range)
 #' @param N Number of experimental arcs (i.e. number of densities to be tested within D1 to DN)
 #' @param max.angle The maximum rotation (in degrees) of the design. If 360, then a full circle design will be created.
 #' @param n.spokes The number of spokes.

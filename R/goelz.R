@@ -8,17 +8,16 @@
 #'  spots be assigned corresponding species.}
 #'  \item{"equality"}{ - Equality merely requires that equal numbers of each species be assigned to each plot.
 #'  This will be achieved if the number of planting spots per plot is a multiple of three and if symmetry is imposed.}
-#'  \item{"conformity"}{ - Conformity to the intended pattern requires that the species proportion in any subsection of the
-#'  triangular plot is close to the expectations.}
+#'  \item{"conformity"}{ - Conformity to the intended pattern requires that the species proportion in any subsection
+#'  of the triangular plot is close to the expectations.}
 #' }
-#' This function does NOT robustly impose the conformity criterion. Species are assigned randomly to each position by sampling
-#' the three species using weights based on the theoretical probability of each species at that point.
-#' For a robust implementation of the conformity criterion that optimizes the rough initial approach of this function using an
-#' evolutionary algorithm, use \code{\link{goelz_optim}}.
+#' This function does NOT robustly impose the conformity criterion. Species are assigned randomly to each position
+#' by sampling the three species using weights based on the theoretical probability of each species at that point.
+#' For a robust implementation of the conformity criterion that optimizes the rough initial approach of this function
+#' using an evolutionary algorithm, use \code{\link{goelz_optim}}.
 #' @return An object of class "sysd" and class "goelz".
-#' If \code{split = FALSE}, this is a list of data frames (tibbles) containing one row for each for each plant in the design.
-#' The length of the list is equal to \code{reps}.
-#' If \code{split = TRUE}, this is a list of three elements:
+#' If \code{split = FALSE}, this is a list of data frames (tibbles) containing one row for each for each plant in
+#' the design. The length of the list is equal to \code{reps}. If \code{split = TRUE}, this is a list of three elements:
 #' \itemize{
 #'  \item{"triangle"}{ - A data frame (tibble) containing one row for each for each plant in the design,
 #'  but not including the species identity.}
@@ -140,13 +139,13 @@ goelz <- function(N     = 35,
 
 #' Add border rows to a Goelz Triangle experimental design
 #' @description Adds border rows to a Goelz Triangle experimental design.
-#' @details Goelz (2001) suggests that all Goelz Triangle experimental designs be enclosed within a number of border/buffer rows.
-#' These border rows reduce edge effects and thereby increase the number of plants with useable data.
-#' The presence of border rows will also increases the number of individuals whose nearest neighbors are all conspecifics.
-#' Goelz (2001) suggests that the species in each planting spot in the border rows be assigned as a 50:50 probability of the
-#' species in the two adjacent spots towards the interior of the triangle. This is the method used here, with each additional
-#' border row being determined successively. The border rows are also held to the same standard of symmetry across the three
-#' zones in the triangle.
+#' @details Goelz (2001) suggests that all Goelz Triangle experimental designs be enclosed within a number of
+#' border/buffer rows. These border rows reduce edge effects and thereby increase the number of plants with useable
+#' data. The presence of border rows will also increases the number of individuals whose nearest neighbors are all
+#' conspecifics. Goelz (2001) suggests that the species in each planting spot in the border rows be assigned as a
+#' 50:50 probability of the species in the two adjacent spots towards the interior of the triangle. This is the method
+#' used here, with each additional border row being determined successively. The border rows are also held to the same
+#' standard of symmetry across the three zones in the triangle.
 #' @return An object of class "goelz".
 #' @param data An object of class "sysd", "goelz", and "goelz-border".
 #' @param n The number of border rows to add on each side of the design.
@@ -286,14 +285,15 @@ goelz_add_border <- function(data, n) {
 #' @description Mirrors a Goelz Triangle experimental design and combines it with the original design to create a
 #' parallelogram design.
 #' @details When establishing two or more replicate Goelz Triangle plots, the plots can be stacked next to each other,
-#' with species matched, to further reduce edge effects. This function takes a single Goelz Triangle, mirrors it to create a
-#' second triangle, and then combines the two together into a parallelogram design. When merging the two designs, the border
-#' rows between the two triangles, if there are any, "double up". This may or may not be desired. Border rows between the two
-#' triangles is not really necessary for reducing edge effects, since this edge is now on the interior of the parallelogram.
-#' However, at least some borders between triangles may be desired to "separate" the two replicates and "maintain" independence.
-#' Any approach can be created by specifiying the exact number of border rows to maintain betwen the two triangles via the
-#' \code{joining.borders} argument. The default is to maintain only the number of border rows that each triangle originally had
-#' (i.e. half the number of borders initially between the two triangles when merging them.)
+#' with species matched, to further reduce edge effects. This function takes a single Goelz Triangle, mirrors it to
+#' create a second triangle, and then combines the two together into a parallelogram design. When merging the two
+#' designs, the border rows between the two triangles, if there are any, "double up". This may or may not be desired.
+#' Border rows between the two triangles is not really necessary for reducing edge effects, since this edge is now on
+#' the interior of the parallelogram. However, at least some borders between triangles may be desired to "separate"
+#' the two replicates and "maintain" independence. Any approach can be created by specifiying the exact number of
+#' border rows to maintain betwen the two triangles via the \code{joining.borders} argument. The default is to maintain
+#' only the number of border rows that each triangle originally had (i.e. half the number of borders initially
+#' between the two triangles when merging them.)
 #' @return An object of class "sysd", "goelz", and "goelz-mirror".
 #' @param data An object of class "goelz".
 #' @param joining.borders The number of border rows to maintain between the two triangles.
@@ -360,14 +360,15 @@ goelz_mirror <- function(data, joining.borders = max(data$border.num, na.rm = TR
 
 #' Create conformity-optimized Goelz Triangle experimental designs
 #' @description Creates conformity-optimized Goelz Triangle experimental designs
-#' @details While \code{\link{goelz}} creates Goelz Triangle designs that roughly follow the conformity criterion set forth
-#' by Goelz (2001), this function optimizes designs for conformity using an evolutionary algorithm. Function parameters other
-#' than \code{N} are all controls on the evolutionary algorithm. The \code{\link{ecr}} package is used for the evolutionary
-#' algorithm.
+#' @details While \code{\link{goelz}} creates Goelz Triangle designs that roughly follow the conformity criterion set
+#' forth by Goelz (2001), this function optimizes designs for conformity using an evolutionary algorithm. Function
+#' parameters other than \code{N} are all controls on the evolutionary algorithm. The \code{\link{ecr}} package is used
+#' for the evolutionary algorithm.
 #' @return An list containing:
 #' \itemize{
 #'  \item{"stats"}{ - A data frame (tibble) containing statistics on each generation in the evolutionary algorithm.}
-#'  \item{"data"}{ - A data frame (tibble) containing the actual data (designs) of each Goelz Triangle in each generation.}
+#'  \item{"data"}{ - A data frame (tibble) containing the actual data (designs) of each Goelz Triangle in each
+#'  generation.}
 #' }
 #' @param N The number of plants to be on each edge of the design.
 #' @param MU The population size.

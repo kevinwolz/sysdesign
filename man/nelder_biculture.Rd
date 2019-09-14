@@ -9,8 +9,9 @@ nelder_biculture(design, comps = NULL)
 \arguments{
 \item{design}{An object of class "nelder" created by \code{\link{nelder}}.}
 
-\item{comps}{An option numeric vector containing the ratios of one species in each spoke. This can effectively be used to
-create non-standard bi-culture designs that deviate from the Goelz (2001) approach. If \code{NULL}, the default, then a linear
+\item{comps}{An option numeric vector containing the ratios of one species in each spoke.
+This can effectively be used to create non-standard bi-culture designs that deviate from the Goelz (2001) approach.
+If \code{NULL}, the default, then a linear
 gradient of speies composition is used between monoculture extremes for each species.}
 }
 \value{

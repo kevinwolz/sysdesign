@@ -28,17 +28,18 @@ goelz_optim(N = 35, MU = 100, LAMBDA = MU, MAX.GEN = 150,
 An list containing:
 \itemize{
  \item{"stats"}{ - A data frame (tibble) containing statistics on each generation in the evolutionary algorithm.}
- \item{"data"}{ - A data frame (tibble) containing the actual data (designs) of each Goelz Triangle in each generation.}
+ \item{"data"}{ - A data frame (tibble) containing the actual data (designs) of each Goelz Triangle in each
+ generation.}
 }
 }
 \description{
 Creates conformity-optimized Goelz Triangle experimental designs
 }
 \details{
-While \code{\link{goelz}} creates Goelz Triangle designs that roughly follow the conformity criterion set forth
-by Goelz (2001), this function optimizes designs for conformity using an evolutionary algorithm. Function parameters other
-than \code{N} are all controls on the evolutionary algorithm. The \code{\link{ecr}} package is used for the evolutionary
-algorithm.
+While \code{\link{goelz}} creates Goelz Triangle designs that roughly follow the conformity criterion set
+forth by Goelz (2001), this function optimizes designs for conformity using an evolutionary algorithm. Function
+parameters other than \code{N} are all controls on the evolutionary algorithm. The \code{\link{ecr}} package is used
+for the evolutionary algorithm.
 }
 \examples{
 dat <- goelz_optim()

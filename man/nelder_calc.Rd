@@ -13,7 +13,8 @@ nelder_calc(alpha, theta, tau, D1, N, max.angle, n.spokes, spoke.borders)
 
 \item{tau}{The "rectangularity" proportion}
 
-\item{D1}{Plant density within the first experimental arc (plants ha-1) (i.e. upper extreme of experimental plant density range)}
+\item{D1}{Plant density within the first experimental arc (plants ha-1)
+(i.e. upper extreme of experimental plant density range)}
 
 \item{N}{Number of experimental arcs (i.e. number of densities to be tested within D1 to DN)}
 

@@ -20,14 +20,15 @@ parallelogram design.
 }
 \details{
 When establishing two or more replicate Goelz Triangle plots, the plots can be stacked next to each other,
-with species matched, to further reduce edge effects. This function takes a single Goelz Triangle, mirrors it to create a
-second triangle, and then combines the two together into a parallelogram design. When merging the two designs, the border
-rows between the two triangles, if there are any, "double up". This may or may not be desired. Border rows between the two
-triangles is not really necessary for reducing edge effects, since this edge is now on the interior of the parallelogram.
-However, at least some borders between triangles may be desired to "separate" the two replicates and "maintain" independence.
-Any approach can be created by specifiying the exact number of border rows to maintain betwen the two triangles via the
-\code{joining.borders} argument. The default is to maintain only the number of border rows that each triangle originally had
-(i.e. half the number of borders initially between the two triangles when merging them.)
+with species matched, to further reduce edge effects. This function takes a single Goelz Triangle, mirrors it to
+create a second triangle, and then combines the two together into a parallelogram design. When merging the two
+designs, the border rows between the two triangles, if there are any, "double up". This may or may not be desired.
+Border rows between the two triangles is not really necessary for reducing edge effects, since this edge is now on
+the interior of the parallelogram. However, at least some borders between triangles may be desired to "separate"
+the two replicates and "maintain" independence. Any approach can be created by specifiying the exact number of
+border rows to maintain betwen the two triangles via the \code{joining.borders} argument. The default is to maintain
+only the number of border rows that each triangle originally had (i.e. half the number of borders initially
+between the two triangles when merging them.)
 }
 \examples{
 dat <- goelz()

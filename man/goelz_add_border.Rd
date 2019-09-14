@@ -18,13 +18,13 @@ An object of class "goelz".
 Adds border rows to a Goelz Triangle experimental design.
 }
 \details{
-Goelz (2001) suggests that all Goelz Triangle experimental designs be enclosed within a number of border/buffer rows.
-These border rows reduce edge effects and thereby increase the number of plants with useable data.
-The presence of border rows will also increases the number of individuals whose nearest neighbors are all conspecifics.
-Goelz (2001) suggests that the species in each planting spot in the border rows be assigned as a 50:50 probability of the
-species in the two adjacent spots towards the interior of the triangle. This is the method used here, with each additional
-border row being determined successively. The border rows are also held to the same standard of symmetry across the three
-zones in the triangle.
+Goelz (2001) suggests that all Goelz Triangle experimental designs be enclosed within a number of
+border/buffer rows. These border rows reduce edge effects and thereby increase the number of plants with useable
+data. The presence of border rows will also increases the number of individuals whose nearest neighbors are all
+conspecifics. Goelz (2001) suggests that the species in each planting spot in the border rows be assigned as a
+50:50 probability of the species in the two adjacent spots towards the interior of the triangle. This is the method
+used here, with each additional border row being determined successively. The border rows are also held to the same
+standard of symmetry across the three zones in the triangle.
 }
 \examples{
 dat <- goelz()

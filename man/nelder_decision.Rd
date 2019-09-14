@@ -7,16 +7,19 @@
 nelder_decision(DN, D1, N, tau = 1, even = FALSE, max.angle = 360)
 }
 \arguments{
-\item{DN}{Plant density within the last experimental arc (plants ha-1) (i.e. lower extreme of experimental plant density range)}
+\item{DN}{Plant density within the last experimental arc (plants ha-1)
+(i.e. lower extreme of experimental plant density range)}
 
-\item{D1}{Plant density within the first experimental arc (plants ha-1) (i.e. upper extreme of experimental plant density range)}
+\item{D1}{Plant density within the first experimental arc (plants ha-1)
+(i.e. upper extreme of experimental plant density range)}
 
 \item{N}{Number of experimental arcs (i.e. number of densities to be tested within D1 to DN)}
 
 \item{tau}{The "rectangularity" proportion. See \code{\link{nelder}} for details.}
 
-\item{even}{Logical indicated whether or not the design should be adjusted so that the angle between spokes goes evenly
-into \code{max.angle} (i.e. so that there are no spokes that must be removed from the experiment as border spokes).}
+\item{even}{Logical indicated whether or not the design should be adjusted so that the angle between spokes goes
+evenly into \code{max.angle} (i.e. so that there are no spokes that must be removed from the experiment as border
+spokes).}
 
 \item{max.angle}{The maximum rotation (in degrees) of the design. If 360, then a full circle design will be created.}
 }
@@ -28,7 +31,8 @@ Creates a Nelder Fan experimental design decision table.
 }
 \details{
 This function helps explore Nelder Fan design options and select a design that meets external constraints
-(e.g. plant or space availability). Function inputs are identical to \code{\link{nelder}}, but inputs of any length are allowed.
+(e.g. plant or space availability).
+Function inputs are identical to \code{\link{nelder}}, but inputs of any length are allowed.
 All possible combinations of inputs are created using \code{expand.grid}, and then each of these cases is passed to
 \code{\link{nelder}} for evaluation. Inputs and outputs are all combined and returned for evaluation.
 }

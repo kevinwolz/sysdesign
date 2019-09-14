@@ -15,9 +15,8 @@ goelz(N = 35, reps = 1, split = FALSE)
 }
 \value{
 An object of class "sysd" and class "goelz".
-If \code{split = FALSE}, this is a list of data frames (tibbles) containing one row for each for each plant in the design.
-The length of the list is equal to \code{reps}.
-If \code{split = TRUE}, this is a list of three elements:
+If \code{split = FALSE}, this is a list of data frames (tibbles) containing one row for each for each plant in
+the design. The length of the list is equal to \code{reps}. If \code{split = TRUE}, this is a list of three elements:
 \itemize{
  \item{"triangle"}{ - A data frame (tibble) containing one row for each for each plant in the design,
  but not including the species identity.}
@@ -39,13 +38,13 @@ This function creates a Goelz Triangle design following several criteria set for
  spots be assigned corresponding species.}
  \item{"equality"}{ - Equality merely requires that equal numbers of each species be assigned to each plot.
  This will be achieved if the number of planting spots per plot is a multiple of three and if symmetry is imposed.}
- \item{"conformity"}{ - Conformity to the intended pattern requires that the species proportion in any subsection of the
- triangular plot is close to the expectations.}
+ \item{"conformity"}{ - Conformity to the intended pattern requires that the species proportion in any subsection
+ of the triangular plot is close to the expectations.}
 }
-This function does NOT robustly impose the conformity criterion. Species are assigned randomly to each position by sampling
-the three species using weights based on the theoretical probability of each species at that point.
-For a robust implementation of the conformity criterion that optimizes the rough initial approach of this function using an
-evolutionary algorithm, use \code{\link{goelz_optim}}.
+This function does NOT robustly impose the conformity criterion. Species are assigned randomly to each position
+by sampling the three species using weights based on the theoretical probability of each species at that point.
+For a robust implementation of the conformity criterion that optimizes the rough initial approach of this function
+using an evolutionary algorithm, use \code{\link{goelz_optim}}.
 }
 \examples{
 dat <- goelz()
