@@ -26,7 +26,8 @@ Other definition functions: \code{\link{goelz_add_border}},
   \code{\link{goelz}},
   \code{\link{nelder_biculture_competition}},
   \code{\link{nelder_biculture}},
-  \code{\link{nelder_decision}}, \code{\link{nelder}}
+  \code{\link{nelder_decision}}, \code{\link{nelder}},
+  \code{\link{select_optimal_goelz}}
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}

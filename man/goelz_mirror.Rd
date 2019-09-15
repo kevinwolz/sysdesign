@@ -12,7 +12,7 @@ goelz_mirror(data, joining.borders = max(data$border.num, na.rm = TRUE))
 \item{joining.borders}{The number of border rows to maintain between the two triangles.}
 }
 \value{
-An object of class sysd, goelz, and goelz-mirror.
+A data frame (tibble) of class sysd, goelz, and goelz-mirror.
 }
 \description{
 Mirrors a Goelz Triangle experimental design and combines it with the original design to create a
@@ -48,7 +48,8 @@ Other definition functions: \code{\link{goelz_add_border}},
   \code{\link{goelz}},
   \code{\link{nelder_biculture_competition}},
   \code{\link{nelder_biculture}},
-  \code{\link{nelder_decision}}, \code{\link{nelder}}
+  \code{\link{nelder_decision}}, \code{\link{nelder}},
+  \code{\link{select_optimal_goelz}}
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}

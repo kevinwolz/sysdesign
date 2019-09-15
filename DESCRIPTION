@@ -1,7 +1,7 @@
 Package: sysdesign
 Type: Package
 Title: An R Toolbox for Creating & Analyzing Systematic Experimental Designs in Biology
-Version: 0.0.2
+Version: 0.0.3
 Author: Kevin J Wolz
 Maintainer: Kevin J Wolz <kevin@savannainstitute.org>
 Description: An R toolbox for creating & analyzing systematic experimental 

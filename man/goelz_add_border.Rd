@@ -7,12 +7,12 @@
 goelz_add_border(data, n)
 }
 \arguments{
-\item{data}{An object of class goelz, goelz, and goelz-border.}
+\item{data}{An object of class goelz.}
 
 \item{n}{The number of border rows to add on each side of the design.}
 }
 \value{
-An object of class goelz.
+A data frame (tibble) of class sysd, goelz, and goelz-border.
 }
 \description{
 Adds border rows to a Goelz Triangle experimental design.
@@ -43,7 +43,8 @@ Other definition functions: \code{\link{goelz_corners}},
   \code{\link{goelz}},
   \code{\link{nelder_biculture_competition}},
   \code{\link{nelder_biculture}},
-  \code{\link{nelder_decision}}, \code{\link{nelder}}
+  \code{\link{nelder_decision}}, \code{\link{nelder}},
+  \code{\link{select_optimal_goelz}}
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}

@@ -29,7 +29,7 @@ plot_nelder <- function(data,
                         ex.area      = FALSE,
                         caption      = FALSE) {
 
-  if(!("nelder" %in% class(data)))            stop("data must be of class 'nelder'",                      call. = FALSE)
+  nelder_class_check(data)
   if(!(is.numeric(size) & length(size) == 1)) stop("size must be numeric and of length 1",                call. = FALSE)
   if(!(is.character(fill.palette) &
        length(fill.palette) == 2))            stop("fill.palette must be a character vector of length 2", call. = FALSE)
@@ -126,16 +126,16 @@ plot_goelz <- function(data,
 
   allowed.cols <- c("species", "zone", "border")
   goelz_class_check(data)
-  data <- goelz_single_check(data)
-  if(!(is.numeric(size) & length(size) == 1))       stop("size must be numeric and of length 1",              call. = FALSE)
-  if(!(fill %in% allowed.cols & length(fill) == 1)) stop("fill must be one of: species, zone, border",        call. = FALSE)
-  if(!(color %in% c(allowed.cols, "none") &
-       length(color) == 1))                         stop("color must be one of: species, zone, border, none", call. = FALSE)
-  if(!(is.character(label) & length(label) == 1))   stop("label must be a character vector of length 1",      call. = FALSE)
-  if(!is.character(fill.palette))                   stop("fill.palette must be a character vector",           call. = FALSE)
-  if(!is.character(color.palette))                  stop("color.palette must be a character vector",          call. = FALSE)
-  if(!is.logical(corners))                          stop("corners must be a logical",                         call. = FALSE)
-  if(!is.logical(guides))                           stop("guides must be a logical",                          call. = FALSE)
+  if(!(is.numeric(size) & length(size) == 1))     stop("size must be numeric and of length 1",         call. = FALSE)
+  if(!(is.character(label) & length(label) == 1)) stop("label must be a character vector of length 1", call. = FALSE)
+  if(!is.character(fill.palette))                 stop("fill.palette must be a character vector",      call. = FALSE)
+  if(!is.character(color.palette))                stop("color.palette must be a character vector",     call. = FALSE)
+  if(!is.logical(corners))                        stop("corners must be a logical",                    call. = FALSE)
+  if(!is.logical(guides))                         stop("guides must be a logical",                     call. = FALSE)
+  if(!(fill %in% allowed.cols & length(fill) == 1))
+    stop("fill must be one of: species, zone, border", call. = FALSE)
+  if(!(color %in% c(allowed.cols, "none") & length(color) == 1))
+    stop("color must be one of: species, zone, border, none", call. = FALSE)
 
   data$species <- factor(data$species)
 

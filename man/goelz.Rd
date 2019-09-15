@@ -4,27 +4,13 @@
 \alias{goelz}
 \title{Create a Goelz Triangle experimental design}
 \usage{
-goelz(N = 35, reps = 1, split = FALSE)
+goelz(N = 35)
 }
 \arguments{
 \item{N}{The number of plants to be on each edge of the design.}
-
-\item{reps}{The number of independent designs to create.}
-
-\item{split}{A logical indicating whether the result should be in "split" format or not.}
 }
 \value{
-An object of class sysd and class goelz.
-If \code{split = FALSE}, this is a list of data frames (tibbles) containing one row for each for each plant in
-the design. The length of the list is equal to \code{reps}. If \code{split = TRUE}, this is a list of three elements:
-\itemize{
- \item{"triangle"}{ - A data frame (tibble) containing one row for each for each plant in the design,
- but not including the species identity.}
- \item{"design"}{ - A list of numeric vectors containing the species identities (1, 2, or, 3).
- The length of the list is equal to \code{reps}.}
- \item{"A.design"}{ - A list of numeric vectors containing the species identities (1, 2, or, 3) of plants in zone A.
- The length of the list is equal to \code{reps}.}
-}
+A data frame (tibble) of class sysd and class goelz.
 }
 \description{
 Creates a Goelz Triangle experimental design.
@@ -62,7 +48,8 @@ Other definition functions: \code{\link{goelz_add_border}},
   \code{\link{goelz_starts}},
   \code{\link{nelder_biculture_competition}},
   \code{\link{nelder_biculture}},
-  \code{\link{nelder_decision}}, \code{\link{nelder}}
+  \code{\link{nelder_decision}}, \code{\link{nelder}},
+  \code{\link{select_optimal_goelz}}
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}

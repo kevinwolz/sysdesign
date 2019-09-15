@@ -4,11 +4,11 @@
 \alias{goelz_optim}
 \title{Create conformity-optimized Goelz Triangle experimental designs}
 \usage{
-goelz_optim(N = 35, MU = 100, LAMBDA = MU, MAX.GEN = 150,
+goelz_optim(data, MU = 100, LAMBDA = MU, MAX.GEN = 150,
   P.RECOMB = 1, RECOMB = 0.1, P.MUT = 1, MUT = 0.005)
 }
 \arguments{
-\item{N}{The number of plants to be on each edge of the design.}
+\item{data}{An object of class goelz.}
 
 \item{MU}{The population size.}
 
@@ -27,6 +27,7 @@ goelz_optim(N = 35, MU = 100, LAMBDA = MU, MAX.GEN = 150,
 \value{
 An list containing:
 \itemize{
+ \item{"triangle"}{ - A data frame (tibble) containing the base goelz design.}
  \item{"stats"}{ - A data frame (tibble) containing statistics on each generation in the evolutionary algorithm.}
  \item{"data"}{ - A data frame (tibble) containing the actual data (designs) of each Goelz Triangle in each
  generation.}
@@ -38,7 +39,8 @@ Creates conformity-optimized Goelz Triangle experimental designs
 \details{
 While \code{\link{goelz}} creates Goelz Triangle designs that roughly follow the conformity criterion set
 forth by Goelz (2001), this function optimizes designs for conformity using an evolutionary algorithm. Function
-parameters other than \code{N} are all controls on the evolutionary algorithm. The \code{\link{ecr}} package is used
+parameters other than \code{data} are all controls on the evolutionary algorithm.
+The \code{\link{ecr}} package is used
 for the evolutionary algorithm.
 }
 \examples{
@@ -57,7 +59,8 @@ Other definition functions: \code{\link{goelz_add_border}},
   \code{\link{goelz}},
   \code{\link{nelder_biculture_competition}},
   \code{\link{nelder_biculture}},
-  \code{\link{nelder_decision}}, \code{\link{nelder}}
+  \code{\link{nelder_decision}}, \code{\link{nelder}},
+  \code{\link{select_optimal_goelz}}
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}

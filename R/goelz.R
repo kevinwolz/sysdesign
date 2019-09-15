@@ -15,20 +15,8 @@
 #' by sampling the three species using weights based on the theoretical probability of each species at that point.
 #' For a robust implementation of the conformity criterion that optimizes the rough initial approach of this function
 #' using an evolutionary algorithm, use \code{\link{goelz_optim}}.
-#' @return An object of class sysd and class goelz.
-#' If \code{split = FALSE}, this is a list of data frames (tibbles) containing one row for each for each plant in
-#' the design. The length of the list is equal to \code{reps}. If \code{split = TRUE}, this is a list of three elements:
-#' \itemize{
-#'  \item{"triangle"}{ - A data frame (tibble) containing one row for each for each plant in the design,
-#'  but not including the species identity.}
-#'  \item{"design"}{ - A list of numeric vectors containing the species identities (1, 2, or, 3).
-#'  The length of the list is equal to \code{reps}.}
-#'  \item{"A.design"}{ - A list of numeric vectors containing the species identities (1, 2, or, 3) of plants in zone A.
-#'  The length of the list is equal to \code{reps}.}
-#' }
+#' @return A data frame (tibble) of class sysd and class goelz.
 #' @param N The number of plants to be on each edge of the design.
-#' @param reps The number of independent designs to create.
-#' @param split A logical indicating whether the result should be in "split" format or not.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @references
 #' \itemize{
@@ -40,17 +28,13 @@
 #' @family definition functions
 #' @examples
 #' dat <- goelz()
-goelz <- function(N     = 35,
-                  reps  = 1,
-                  split = FALSE) {
+goelz <- function(N = 35) {
 
   if(!(is.numeric(N) & length(N) == 1))       stop("N must be numeric and of length 1",    call. = FALSE)
   if(goelz_count(N = N)$remainder.3 != 0)     stop(paste0("A triangle with N = ", N,
                                                           " does not have a number of points divisible by 3. ",
                                                           "Please use a differnet N."), call. = FALSE)
   if(N < 5) stop("N must be greater than 5 to create a useful Goelz Triangle",             call. = FALSE)
-  if(!(is.numeric(reps) & length(reps) == 1)) stop("reps must be numeric and of length 1", call. = FALSE)
-  if(!is.logical(split))                      stop("split must be a logical",              call. = FALSE)
 
   L <- seq(from = 0, to = 100, length.out = N)
   SPECIES <- 1:3
@@ -103,38 +87,14 @@ goelz <- function(N     = 35,
     return(OUT)
   }
 
-  out <- OUT <- A.out <- list()
-  index <- 1
-  if(split) {
-    while(index <= reps) {
-      A.design <- triangle %>%
-        dplyr::filter(zone == "A") %>%
-        dplyr::mutate(species = init_species(x, y, z)) %>%
-        .$species
+  A.design <- triangle %>%
+    dplyr::filter(zone == "A")
+  out <- A_to_triangle(triangle  = triangle,
+                       A.species = init_species(A.design$x, A.design$y, A.design$z)) %>%
+    dplyr::select(id, x.pos, y.pos, x.field, y.field, species, zone, zone.id, x, y, z, border)
+  class(out) <- c(class(out), "sysd", "goelz")
 
-      B.design <- add_one(A.design)
-      C.design <- add_one(B.design)
-
-      out <- c(out, list(c(A.design, B.design, C.design)))
-      A.out <- c(A.out, list(A.design))
-      index <- index + 1
-    }
-    OUT <- list(triangle = triangle, design = out, A.design = A.out)
-  } else {
-    while(index <= reps) {
-      A.design <- triangle %>%
-        dplyr::filter(zone == "A")
-      out <- A_to_triangle(triangle  = triangle,
-                           A.species = init_species(A.design$x, A.design$y, A.design$z))
-      out[[1]] <- out[[1]] %>% dplyr::select(id, x.pos, y.pos, x.field, y.field, species, zone, zone.id, x, y, z, border)
-      OUT <- c(OUT, out)
-      index <- index + 1
-    }
-  }
-
-  g.class <- ifelse(split, "goelz-split", "goelz")
-  class(OUT) <- c(class(OUT), g.class, "sysd")
-  return(OUT)
+  return(out)
 }
 
 #' Add border rows to a Goelz Triangle experimental design
@@ -146,8 +106,8 @@ goelz <- function(N     = 35,
 #' 50:50 probability of the species in the two adjacent spots towards the interior of the triangle. This is the method
 #' used here, with each additional border row being determined successively. The border rows are also held to the same
 #' standard of symmetry across the three zones in the triangle.
-#' @return An object of class goelz.
-#' @param data An object of class goelz, goelz, and goelz-border.
+#' @return A data frame (tibble) of class sysd, goelz, and goelz-border.
+#' @param data An object of class goelz.
 #' @param n The number of border rows to add on each side of the design.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @references
@@ -164,7 +124,6 @@ goelz <- function(N     = 35,
 goelz_add_border <- function(data, n) {
 
   goelz_class_check(data)
-  data <- goelz_single_check(data)
   if(!(is.numeric(n) & length(n) == 1)) stop("n must be numeric and of length 1", call. = FALSE)
 
   resample <- function(x, ...) x[sample.int(length(x), ...)]
@@ -294,7 +253,7 @@ goelz_add_border <- function(data, n) {
 #' border rows to maintain betwen the two triangles via the \code{joining.borders} argument. The default is to maintain
 #' only the number of border rows that each triangle originally had (i.e. half the number of borders initially
 #' between the two triangles when merging them.)
-#' @return An object of class sysd, goelz, and goelz-mirror.
+#' @return A data frame (tibble) of class sysd, goelz, and goelz-mirror.
 #' @param data An object of class goelz.
 #' @param joining.borders The number of border rows to maintain between the two triangles.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
@@ -311,6 +270,10 @@ goelz_add_border <- function(data, n) {
 #' dat.border <- goelz_add_border(data = dat, n = 3)
 #' dat.border.mirror <- goelz_mirror(data = dat.border)
 goelz_mirror <- function(data, joining.borders = max(data$border.num, na.rm = TRUE)) {
+
+  goelz_class_check(data)
+  if(!(is.numeric(joining.borders) & length(joining.borders) == 1))
+    stop("joining.borders must be a numeric vector of length 1", call. = FALSE)
 
   # Create & rotate second triangle
   data.mirrored <- data
@@ -354,7 +317,7 @@ goelz_mirror <- function(data, joining.borders = max(data$border.num, na.rm = TR
     dplyr::arrange(y.pos, x.pos) %>% # Reassign ids
     dplyr::mutate(id = 1:nrow(.))
 
-  class(data.combine) <- unique(c(class(data.combine), "sysde", "goelz", "goelz-mirror"))
+  class(data.combine) <- unique(c(class(data.combine), "sysd", "goelz", "goelz-mirror"))
   return(data.combine)
 }
 
@@ -362,15 +325,17 @@ goelz_mirror <- function(data, joining.borders = max(data$border.num, na.rm = TR
 #' @description Creates conformity-optimized Goelz Triangle experimental designs
 #' @details While \code{\link{goelz}} creates Goelz Triangle designs that roughly follow the conformity criterion set
 #' forth by Goelz (2001), this function optimizes designs for conformity using an evolutionary algorithm. Function
-#' parameters other than \code{N} are all controls on the evolutionary algorithm. The \code{\link{ecr}} package is used
+#' parameters other than \code{data} are all controls on the evolutionary algorithm.
+#' The \code{\link{ecr}} package is used
 #' for the evolutionary algorithm.
 #' @return An list containing:
 #' \itemize{
+#'  \item{"triangle"}{ - A data frame (tibble) containing the base goelz design.}
 #'  \item{"stats"}{ - A data frame (tibble) containing statistics on each generation in the evolutionary algorithm.}
 #'  \item{"data"}{ - A data frame (tibble) containing the actual data (designs) of each Goelz Triangle in each
 #'  generation.}
 #' }
-#' @param N The number of plants to be on each edge of the design.
+#' @param data An object of class goelz.
 #' @param MU The population size.
 #' @param LAMBDA The number of offspring to produce in each generation.
 #' @param MAX.GEN The number of generations to run the evolutionary algorithm.
@@ -389,7 +354,7 @@ goelz_mirror <- function(data, joining.borders = max(data$border.num, na.rm = TR
 #' @family definition functions
 #' @examples
 #' dat <- goelz_optim()
-goelz_optim <- function(N        = 35,
+goelz_optim <- function(data,
                         MU       = 100,
                         LAMBDA   = MU,
                         MAX.GEN  = 150,
@@ -403,9 +368,9 @@ goelz_optim <- function(N        = 35,
 
   ### GA CONTROLS
   mutInteger <- function (ind, p, lower, upper) {
-    if(!(is.ineger(lower) & length(lower) == 1)) stop("lower must be an integer of length 1",      call. = FALSE)
-    if(!(is.ineger(upper) & length(upper) == 1)) stop("upper must be an integer of length 1",      call. = FALSE)
-    if(length(lower) != length(upper)) stop("Length of lower and upper bounds need to be equal!", call. = FALSE)
+    if(!(is.integer(lower) & length(lower) == 1)) stop("lower must be an integer of length 1",     call. = FALSE)
+    if(!(is.integer(upper) & length(upper) == 1)) stop("upper must be an integer of length 1",     call. = FALSE)
+    if(length(lower) != length(upper)) stop("Length of lower and upper bounds need to be equal!",  call. = FALSE)
 
     for(idx in 1:length(ind)) {
       available <- seq(from = lower, to = upper, by = 1)
@@ -433,9 +398,23 @@ goelz_optim <- function(N        = 35,
                              fun  = ecr::selGreedy)
 
   ### GA
-  INITIAL.POP <- goelz(N = N, reps = MU, split = TRUE)
-  TRIANGLE    <- INITIAL.POP$triangle
-  population  <- INITIAL.POP$A.design
+  TRIANGLE <- data %>%
+    dplyr::select(id, x.pos, y.pos, x.field, y.field, zone, zone.id, x, y, z, border)
+
+  INITIAL.POP <- list(data)
+  for(i in 1:(MU - 1)) {
+    g <- list(goelz(N = max(data$x.pos)))
+    INITIAL.POP <- c(INITIAL.POP, g)
+  }
+
+  pull.A.design <- function(triangle) {
+    triangle %>%
+      dplyr::filter(zone == "A") %>%
+      .$species
+  }
+
+  population  <- purrr::map(INITIAL.POP, pull.A.design)
+
   GEN <- 1
   init.fitness <- fitness <- ecr::evaluateFitness(control  = control,
                                                   inds     = population,
@@ -488,7 +467,45 @@ goelz_optim <- function(N        = 35,
     print(paste0("DONE WITH  GENERATION: ", GEN, " (", elapsedGen, " minutes)"))
   }
 
-  return(list(stats = pop.stats, data = pop.data))
+  OUT <- list(triangle = TRIANGLE, stats = pop.stats, data = pop.data)
+  class(OUT) <- c(class(OUT), "goelz-optim")
+  return(OUT)
+}
+
+#' Select optimal Goelz Triangle design from the results of goelz_optim
+#' @description Selects optimal Goelz Triangle design from the results of \code{\link{goelz_optim}}.
+#' @return A data frame (tibble) of class goelz.
+#' @param optim.results An object of class goelz-optim.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @export
+#' @importFrom dplyr %>%
+#' @family definition functions
+#' @examples
+#' optim.dat <- goelz_optim()
+#' my_goelz <- select_optimal_goelz(optim.results = optim.dat)
+select_optimal_goelz <- function(optim.results) {
+
+  if(!("goelz-optim" %in% class(optim.results))) stop("optim.results must be of class goelz-optim", call. = FALSE)
+
+  best.design.id <- optim.results$stats %>%
+    dplyr::filter(fitness == min(fitness)) %>%
+    dplyr::select(gen.id, fitness) %>%
+    dplyr::distinct() %>%
+    .$gen.id
+
+  best.design <- optim.results$data %>%
+    dplyr::filter(gen.id == best.design.id[1]) %>%
+    dplyr::filter(gen == orig.gen) %>%
+    dplyr::select(-gen, -orig.gen) %>%
+    dplyr::arrange(id)
+
+  N <- max(optim.results$triangle$x.pos)
+
+  out <- goelz(N = N) %>%
+    dplyr::arrange(zone, zone.id) %>%
+    sysdesign:::A_to_triangle(A.species = best.design$species)
+
+  return(out)
 }
 
 #' Get coordinates of corners of Goelz Triangle experimental design
@@ -503,6 +520,7 @@ goelz_optim <- function(N        = 35,
 #' dat <- goelz()
 #' goelz_corners(data = dat)
 goelz_corners <- function(data) {
+
   goelz_class_check(data)
 
   x.range <- range(round(data$x.field, 2))
@@ -527,6 +545,7 @@ goelz_corners <- function(data) {
 #' dat <- goelz()
 #' goelz_guides(data = dat)
 goelz_guides <- function(data) {
+
   goelz_class_check(data)
 
   x.range  <- range(round(data$x.field, 2))
@@ -569,6 +588,7 @@ goelz_starts <- function(data) {
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @importFrom dplyr %>%
 goelz_fitness <- function(design, triangle) {
+
   design <- triangle %>%
     dplyr::filter(zone == "A") %>%
     dplyr::mutate(species = design)
@@ -593,6 +613,7 @@ goelz_fitness <- function(design, triangle) {
 
     se <- c(se, x.se[!is.nan(x.se)], y.se[!is.nan(y.se)], z.se[!is.nan(z.se)])
   }
+
   return(sum(se))
 }
 
@@ -601,11 +622,13 @@ goelz_fitness <- function(design, triangle) {
 #' @return A popluation matrixs.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 annotate_pop <- function(population, fitness, gens, gen.ids) {
+
   for(i in seq_along(population)) {
     attr(population[[i]], "fitness")    <- fitness[, i]
     attr(population[[i]], "generation") <- gens[i]
     attr(population[[i]], "gen.id")     <- gen.ids[i]
   }
+
   return(population)
 }
 
@@ -670,6 +693,7 @@ add_one <- function(x) {
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @importFrom dplyr %>%
 A_to_triangle <- function(triangle, A.species) {
+
   A.design <- triangle %>%
     dplyr::filter(zone == "A") %>%
     dplyr::arrange(zone.id) %>%
@@ -685,7 +709,7 @@ A_to_triangle <- function(triangle, A.species) {
     dplyr::arrange(zone.id) %>%
     dplyr::mutate(species = add_one(B.design$species))
 
-  return(list(dplyr::bind_rows(A.design, B.design, C.design)))
+  return(dplyr::bind_rows(A.design, B.design, C.design))
 }
 
 #' Remove edge
@@ -717,26 +741,13 @@ goelz_count <- function(N) {
   return(out)
 }
 
-#' Check if goelz object contains only a single Goelz Triangle
-#' @description Checks if goelz object contains only a single Goelz Triangle. Used by \code{\link{goelz_add_border}}.
-#' @return An object of class goelz.
-#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
-goelz_single_check <- function(data) {
-  if(!is.data.frame(data)){
-    if(length(data) == 1) data <- data[[1]] else stop("data must contain only a single goelz triangle", call. = FALSE)
-  }
-  return(data)
-}
-
 #' Check if an object if of class goelz
 #' @description Checks if an object if of class goelz. Used by many goelz definition functions.
 #' @return An error.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 goelz_class_check <- function(data) {
   if(!("goelz" %in% class(data))) {
-    if("goelz-split" %in% class(data)) {
-      stop("data must be of class 'goelz', not 'goelz-split' Use split = FALSE in goelz().", call. = FALSE)
-    } else if("goelz-mirror" %in% class(data)) {
+    if("goelz-mirror" %in% class(data)) {
       stop("data must be of class 'goelz', not 'goelz-mirror'", call. = FALSE)
     } else stop("data must be of class 'goelz'", call. = FALSE)
   }
