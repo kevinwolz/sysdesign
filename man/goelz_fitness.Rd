@@ -4,7 +4,7 @@
 \alias{goelz_fitness}
 \title{Calculate fitness of Goelz Trianlge design}
 \usage{
-goelz_fitness(design, triangle)
+goelz_fitness(design, layout)
 }
 \value{
 A numeric value.
@@ -16,3 +16,4 @@ Used by \code{\link{goelz_optim}} as the fitness function.
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}
 }
+\keyword{internal}

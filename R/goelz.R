@@ -326,16 +326,16 @@ goelz_mirror <- function(data, joining.borders = max(data$border.num, na.rm = TR
 #' @details While \code{\link{goelz}} creates Goelz Triangle designs that roughly follow the conformity criterion set
 #' forth by Goelz (2001), this function optimizes designs for conformity using an evolutionary algorithm. Function
 #' parameters other than \code{data} are all controls on the evolutionary algorithm.
-#' The \code{\link{ecr}} package is used
-#' for the evolutionary algorithm.
+#' The \code{\link{ecr}} package is used for the evolutionary algorithm.
 #' @return An list containing:
 #' \itemize{
-#'  \item{"triangle"}{ - A data frame (tibble) containing the base goelz design.}
+#'  \item{"layout"}{ - A data frame (tibble) containing the base goelz design.}
 #'  \item{"stats"}{ - A data frame (tibble) containing statistics on each generation in the evolutionary algorithm.}
 #'  \item{"data"}{ - A data frame (tibble) containing the actual data (designs) of each Goelz Triangle in each
 #'  generation.}
 #' }
 #' @param data An object of class goelz.
+#' @param save.path A character string indicating the path for where to save data after each generation.
 #' @param MU The population size.
 #' @param LAMBDA The number of offspring to produce in each generation.
 #' @param MAX.GEN The number of generations to run the evolutionary algorithm.
@@ -355,49 +355,30 @@ goelz_mirror <- function(data, joining.borders = max(data$border.num, na.rm = TR
 #' @examples
 #' dat <- goelz_optim()
 goelz_optim <- function(data,
-                        MU       = 100,
-                        LAMBDA   = MU,
-                        MAX.GEN  = 150,
-                        P.RECOMB = 1,
-                        RECOMB   = 0.1,
-                        P.MUT    = 1,
-                        MUT      = 0.005) {
+                        save.path = ".",
+                        MU        = 100,
+                        LAMBDA    = MU,
+                        MAX.GEN   = 150,
+                        P.RECOMB  = 1,
+                        RECOMB    = 0.1,
+                        P.MUT     = 1,
+                        MUT       = 0.005) {
 
+  goelz_class_check(data)
   if(!requireNamespace("ecr", quietly = TRUE)) stop("The package 'ecr' is required for goelz_optim().
                                                     Please install and load it", call. = FALSE)
 
   ### GA CONTROLS
-  mutInteger <- function (ind, p, lower, upper) {
-    if(!(is.integer(lower) & length(lower) == 1)) stop("lower must be an integer of length 1",     call. = FALSE)
-    if(!(is.integer(upper) & length(upper) == 1)) stop("upper must be an integer of length 1",     call. = FALSE)
-    if(length(lower) != length(upper)) stop("Length of lower and upper bounds need to be equal!",  call. = FALSE)
-
-    for(idx in 1:length(ind)) {
-      available <- seq(from = lower, to = upper, by = 1)
-      available <- available[available != ind[idx]]
-      if(runif(1L) < p) ind[idx] <- sample(available, size = 1)
-    }
-    return(ind)
-  }
-  mutInteger <- ecr::makeMutator(mutInteger, supported = "float")
-
   control <- ecr::initECRControl(fitness.fun  = goelz_fitness,
                                  n.objectives = 1,
                                  minimize     = TRUE) %>%
     ecr::registerECROperator(slot = "mutate",
-                             fun  = ecr::setup(mutInteger,
+                             fun  = ecr::setup(ecr::makeMutator(mutInteger, supported = "float"),
                                                p     = MUT,
                                                lower = 1L,
-                                               upper = 3L)) %>%
-    ecr::registerECROperator(slot = "recombine",
-                             fun  = ecr::setup(ecr::recUnifCrossover, p = RECOMB)) %>%
-    ecr::registerECROperator(slot = "selectForMating",
-                             fun  = ecr::setup(ecr::selTournament,
-                                               k = 2L)) %>%
-    ecr::registerECROperator(slot = "selectForSurvival",
-                             fun  = ecr::selGreedy)
+                                               upper = 3L))
 
-  ### GA
+  ## INITIAL POPULATION
   TRIANGLE <- data %>%
     dplyr::select(id, x.pos, y.pos, x.field, y.field, zone, zone.id, x, y, z, border)
 
@@ -415,66 +396,26 @@ goelz_optim <- function(data,
 
   population  <- purrr::map(INITIAL.POP, pull.A.design)
 
-  GEN <- 1
-  init.fitness <- fitness <- ecr::evaluateFitness(control  = control,
-                                                  inds     = population,
-                                                  triangle = TRIANGLE)
-  init.population <- population <- annotate_pop(population = population,
-                                                fitness    = fitness,
-                                                gens       = rep(GEN, length(population)),
-                                                gen.ids    = paste(GEN, 1:length(population), sep = "-"))
+  ## GA
+  ga.out <- run_ga(control     = control,
+                   population  = population,
+                   layout      = dplyr::filter(TRIANGLE, zone == "A"),
+                   layout.comp = dplyr::filter(TRIANGLE, zone == "A"),
+                   LAMBDA      = LAMBDA,
+                   MAX.GEN     = MAX.GEN,
+                   P.RECOMB    = P.RECOMB,
+                   RECOMB      = RECOMB,
+                   P.MUT       = P.MUT,
+                   save.path   = save.path)
 
-  GAout <- compile_pop(population, fitness, triangle = TRIANGLE, GEN = GEN)
-  pop.stats <- GAout$stats
-  pop.data  <- GAout$data
-
-  for(GEN in 2:MAX.GEN) {
-    print(paste("\nSTARTING GENERATION:", GEN))
-    startGen <- proc.time()[3]
-
-    ## GENERATE NEW POPULATION
-    offspring <- ecr::recombinate(control  = control,
-                                  inds     = population,
-                                  fitness  = fitness,
-                                  lambda   = LAMBDA,
-                                  p.recomb = P.RECOMB) %>%
-      ecr::mutate(control = control,
-                  inds    = .,
-                  p.mut   = P.MUT)
-
-    ## EVALUATE FITNESS OF OFFSPRING
-    fitness <- ecr::evaluateFitness(control  = control,
-                                    inds     = offspring,
-                                    triangle = TRIANGLE)
-    offspring <- annotate_pop(population = offspring,
-                              fitness    = fitness,
-                              gens       = rep(GEN, length(offspring)),
-                              gen.ids    = paste(GEN, 1:length(offspring), sep = "-"))
-
-    ## SELECT FOR SURVIVAL
-    sel <- ecr::replaceMuPlusLambda(control    = control,
-                                    population = population,
-                                    offspring  = offspring)
-    population <- sel$population
-    fitness    <- sel$fitness
-
-    ## SAVE DATA
-    GAout <- compile_pop(population, fitness, triangle = TRIANGLE, GEN = GEN)
-    pop.stats <- dplyr::bind_rows(pop.stats, GAout$stats)
-    pop.data  <- dplyr::bind_rows(pop.data, GAout$data)
-
-    elapsedGen = round((proc.time()[3] - startGen) / 60)
-    print(paste0("DONE WITH  GENERATION: ", GEN, " (", elapsedGen, " minutes)"))
-  }
-
-  OUT <- list(triangle = TRIANGLE, stats = pop.stats, data = pop.data)
+  OUT <- list(layout = TRIANGLE, stats = ga.out$pop.stats, data = ga.out$pop.data)
   class(OUT) <- c(class(OUT), "goelz-optim")
   return(OUT)
 }
 
-#' Select optimal Goelz Triangle design from the results of goelz_optim
-#' @description Selects optimal Goelz Triangle design from the results of \code{\link{goelz_optim}}.
-#' @return A data frame (tibble) of class goelz.
+#' Select optimal Goelz Triangle design sfrom the results of goelz_optim
+#' @description Selects optimal Goelz Triangle designs from the results of \code{\link{goelz_optim}}.
+#' @return A list of objects of class goelz.
 #' @param optim.results An object of class goelz-optim.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @export
@@ -487,25 +428,18 @@ select_optimal_goelz <- function(optim.results) {
 
   if(!("goelz-optim" %in% class(optim.results))) stop("optim.results must be of class goelz-optim", call. = FALSE)
 
-  best.design.id <- optim.results$stats %>%
-    dplyr::filter(fitness == min(fitness)) %>%
-    dplyr::select(gen.id, fitness) %>%
-    dplyr::distinct() %>%
-    .$gen.id
+  N <- max(optim.results$layout$x.pos)
+  best.designs <- select_optimal(optim.results)
 
-  best.design <- optim.results$data %>%
-    dplyr::filter(gen.id == best.design.id[1]) %>%
-    dplyr::filter(gen == orig.gen) %>%
-    dplyr::select(-gen, -orig.gen) %>%
-    dplyr::arrange(id)
+  OUT <- list()
+  for(i in 1:length(best.designs)) {
+    out <- goelz(N = N) %>%
+      dplyr::arrange(zone, zone.id) %>%
+      A_to_triangle(A.species = best.design[[i]]$species)
+    OUT <- c(OUT, list(out))
+  }
 
-  N <- max(optim.results$triangle$x.pos)
-
-  out <- goelz(N = N) %>%
-    dplyr::arrange(zone, zone.id) %>%
-    sysdesign:::A_to_triangle(A.species = best.design$species)
-
-  return(out)
+  return(OUT)
 }
 
 #' Get coordinates of corners of Goelz Triangle experimental design
@@ -587,12 +521,12 @@ goelz_starts <- function(data) {
 #' @return A numeric value.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @importFrom dplyr %>%
-goelz_fitness <- function(design, triangle) {
+#' @keywords internal
+goelz_fitness <- function(design, layout) {
 
-  design <- triangle %>%
-    dplyr::filter(zone == "A") %>%
+  design <- layout %>%
     dplyr::mutate(species = design)
-  N <- length(unique(triangle$x))
+  N <- length(unique(layout$x))
   L <- seq(from = 0, to = 100, length.out = N)
   se <- NULL
   for(i in 1:N) {
@@ -617,67 +551,12 @@ goelz_fitness <- function(design, triangle) {
   return(sum(se))
 }
 
-#' Annotate population with fitness and stats
-#' @description Annotates population with fitness and stats. Used by \code{\link{goelz_optim}}.
-#' @return A popluation matrixs.
-#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
-annotate_pop <- function(population, fitness, gens, gen.ids) {
-
-  for(i in seq_along(population)) {
-    attr(population[[i]], "fitness")    <- fitness[, i]
-    attr(population[[i]], "generation") <- gens[i]
-    attr(population[[i]], "gen.id")     <- gen.ids[i]
-  }
-
-  return(population)
-}
-
-#' Compile popluation data
-#' @description Compiles popluation data. Used by \code{\link{goelz_optim}}.
-#' @return A list.
-#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
-#' @importFrom dplyr %>%
-compile_pop <- function(pop, fit, triangle, GEN) {
-
-  orig.gen <- pop %>%
-    purrr::map_dbl(attr, which = "generation") %>%
-    dplyr::as_tibble() %>%
-    dplyr::rename(orig.gen = value)
-
-  gen.id <- pop %>%
-    purrr::map_chr(attr, which = "gen.id") %>%
-    dplyr::as_tibble() %>%
-    dplyr::rename(gen.id = value)
-
-  fit <- fit %>%
-    t() %>%
-    as.data.frame() %>%
-    dplyr::as_tibble() %>%
-    dplyr::rename(fitness = V1)
-
-  stats <- bind_cols(dplyr::tibble(gen = rep(GEN, nrow(orig.gen))), orig.gen, gen.id, fit)
-
-  bind_triangle <- function(x, tri) dplyr::bind_cols(tri, x)
-
-  data <- pop %>%
-    purrr::map(matrix, ncol = 1) %>%
-    purrr::map(dplyr::as_tibble) %>%
-    purrr::map(setNames, nm = "species") %>%
-    purrr::map(bind_triangle, tri = dplyr::filter(triangle, zone == "A")) %>%
-    dplyr::bind_rows() %>%
-    dplyr::mutate(orig.gen = rep(orig.gen$orig.gen, each = nrow(dplyr::filter(triangle, zone == "A")))) %>%
-    dplyr::mutate(gen.id = rep(gen.id$gen.id, each = nrow(dplyr::filter(triangle, zone == "A")))) %>%
-    dplyr::mutate(gen = GEN) %>%
-    dplyr::select(gen, orig.gen, gen.id, zone, zone.id, id, x, y, z, species)
-
-  return(list(stats = stats, data = data))
-}
-
 #' Add one
 #' @description Adds one.
 #' Used by \code{\link{goelz}}, \code{\link{goelz_add_border}}, and \code{\link{A_to_triangle}}.
 #' @return A numeric vector.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @keywords internal
 add_one <- function(x) {
   x[x == 3] <- 4
   x[x == 2] <- 3
@@ -692,6 +571,7 @@ add_one <- function(x) {
 #' @return A list.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @importFrom dplyr %>%
+#' @keywords internal
 A_to_triangle <- function(triangle, A.species) {
 
   A.design <- triangle %>%
@@ -718,6 +598,7 @@ A_to_triangle <- function(triangle, A.species) {
 #' @return An object of class goelz.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @importFrom dplyr %>%
+#' @keywords internal
 remove_edge <- function(data, side, n) {
   if(side == "right") func <- max else func <- min
   for(i in 1:n) {
@@ -733,6 +614,7 @@ remove_edge <- function(data, side, n) {
 #' @description Counts total plants in Goelz Triangle design. Used by \code{\link{goelz}}.
 #' @return A data frame (tibble).
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @keywords internal
 goelz_count <- function(N) {
   count_func <- function(x) sum(1:x)
   out <- dplyr::tibble(N            = N,
@@ -745,6 +627,7 @@ goelz_count <- function(N) {
 #' @description Checks if an object if of class goelz. Used by many goelz definition functions.
 #' @return An error.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @keywords internal
 goelz_class_check <- function(data) {
   if(!("goelz" %in% class(data))) {
     if("goelz-mirror" %in% class(data)) {

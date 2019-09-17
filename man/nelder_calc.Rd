@@ -31,4 +31,7 @@ A list containing the plant and plot data.
 Calculates Nelder Fan design.
 Used within \code{\link{nelder}}.
 }
+\author{
+Kevin J Wolz, \email{kevin@savannainstitute.org}
+}
 \keyword{internal}

@@ -160,3 +160,52 @@ plot_goelz <- function(data,
 
   return(plot.obj)
 }
+
+#' Plot a diagnositc display of compeitition in a Nelder Fan biculture experimental design
+#' @description Plots a diagnositc display of compeitition in a Nelder Fan biculture experimental design.
+#' The optimal competition scenario is to have counts consistent across arcs. See \code{\link{nelder_optim}} for more information.
+#' @return If \code{plot = TRUE}, returns a ggplot object, otherwise the data that would create the plot is returned.
+#' @param data An object of class 'nelder-biculture' created via \code{\link{goelz}} with \code{split} = FALSE.
+#' @param plot If \code{TRUE}, the default, a ggplot object is returned.
+#' If \code{FALSE}, the data that would create the plot is returned.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @export
+#' @import ggplot2
+#' @importFrom dplyr %>%
+#' @family plot functions
+#' @examples
+#' dat <- nelder()
+#' dat.bi <- nelder_biculture(data = dat)
+#' plot_nelder_biculture_competition(data = dat.bi)
+plot_nelder_biculture_competition <- function(data, plot = TRUE) {
+
+  nelder_biculture_class_check(data)
+
+  plot.data <- data %>%
+    nelder_biculture_competition() %>%
+    dplyr::group_by(species, arc, A.neighbors) %>%
+    dplyr::filter(!is.na(A.neighbors)) %>%
+    dplyr::summarize(dens = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(species = factor(species,
+                                   levels = c("A", "B"),
+                                   labels = c("Species A", "Species B")))
+
+  plot.obj <- ggplot2::ggplot(plot.data, aes(x     = arc,
+                                                y     = A.neighbors,
+                                                fill  = dens,
+                                                label = dens)) +
+    ggplot2::labs(x    = "Arc #",
+                  y    = "# of A Neighbors",
+                  fill = "# of Individuals") +
+    ggplot2::geom_raster(na.rm = TRUE) +
+    ggplot2::geom_text(color = "white") +
+    ggplot2::facet_wrap(~species)
+
+  if(requireNamespace("viridis", quietly = TRUE)) {
+    plot.obj <- plot.obj +
+      viridis::scale_fill_viridis(option = "magma")
+  }
+
+  return(if(plot) plot.obj else plot.data)
+}

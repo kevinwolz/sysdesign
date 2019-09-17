@@ -4,12 +4,12 @@
 \alias{nelder_biculture}
 \title{Create a Biculture Nelder Fan experimental design}
 \usage{
-nelder_biculture(design, comps = NULL)
+nelder_biculture(data, comps = NULL)
 }
 \arguments{
-\item{design}{An object of class nelder created by \code{\link{nelder}}.}
+\item{data}{An object of class nelder.}
 
-\item{comps}{An option numeric vector containing the ratios of one species in each spoke.
+\item{comps}{An optional numeric vector containing the ratios of one species in each spoke.
 This can effectively be used to create non-standard bi-culture designs that deviate from the Goelz (2001) approach.
 If \code{NULL}, the default, then a linear
 gradient of speies composition is used between monoculture extremes for each species.}
@@ -35,10 +35,14 @@ the Goelz (2001) biculture version. For Nelder Fan designs with \code{max.angle 
 set to opposite poles of the circle, and the composition gradient occurs in two direction along either side of the
 circle in between. For Nelder Fan designs with \code{max angle < 360}, the composition gradient occurs in one
 direction between monoculture extremes at either edge of the design.
+This function does NOT robustly impose any conformity criterion to ensure that competition levels are tested evenly across
+all density levels. Species are assigned randomly to positions within each spoke of the design based on the probability of each
+species in that spoke. For a robust implementation of the competition-density conformity criterion that optimizes the rough
+initial approach of this function using an evolutionary algorithm, use \code{\link{nelder_biculture_optim}}.
 }
 \examples{
 nelder.design <- nelder(DN = 1000, D1 = 3000, N = 5)
-dat <- nelder_biculture(design = nelder.design)
+dat <- nelder_biculture(data = nelder.design)
 }
 \references{
 \itemize{
@@ -56,7 +60,11 @@ Other definition functions: \code{\link{goelz_add_border}},
   \code{\link{goelz_mirror}}, \code{\link{goelz_optim}},
   \code{\link{goelz_starts}}, \code{\link{goelz}},
   \code{\link{nelder_biculture_competition}},
-  \code{\link{nelder_decision}}, \code{\link{nelder}}
+  \code{\link{nelder_biculture_optim}},
+  \code{\link{nelder_decision}},
+  \code{\link{nelder_interspoke_distance}},
+  \code{\link{nelder}}, \code{\link{select_optimal_goelz}},
+  \code{\link{select_optimal_nelder_biculture}}
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}

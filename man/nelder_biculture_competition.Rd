@@ -4,16 +4,16 @@
 \alias{nelder_biculture_competition}
 \title{Calculate competition indices for a Nelder Fan experimental design}
 \usage{
-nelder_biculture_competition(design, search.radius = NULL)
+nelder_biculture_competition(data, search.radius = NULL)
 }
 \arguments{
-\item{design}{An object of class nelder.}
+\item{data}{An object of class nelder-biculture.}
 
 \item{search.radius}{Search radius to use for calculating inverse distance weighted competition (m). If \code{NULL},
 the default, then inverse distance weighted competition is not calculated.}
 }
 \value{
-A data frame (tibble), which is the \code{plants} element of the nelder object passed to \code{design},
+A data frame (tibble), which is the \code{plants} element of the nelder object passed to \code{data},
 but with 4 additioanl columns:
 \itemize{
  \item{"A.inv.dist"}{ - The inverse distance weighted competition felt by that individual due to nearby individuals
@@ -42,8 +42,12 @@ Other definition functions: \code{\link{goelz_add_border}},
   \code{\link{goelz_corners}}, \code{\link{goelz_guides}},
   \code{\link{goelz_mirror}}, \code{\link{goelz_optim}},
   \code{\link{goelz_starts}}, \code{\link{goelz}},
+  \code{\link{nelder_biculture_optim}},
   \code{\link{nelder_biculture}},
-  \code{\link{nelder_decision}}, \code{\link{nelder}}
+  \code{\link{nelder_decision}},
+  \code{\link{nelder_interspoke_distance}},
+  \code{\link{nelder}}, \code{\link{select_optimal_goelz}},
+  \code{\link{select_optimal_nelder_biculture}}
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}

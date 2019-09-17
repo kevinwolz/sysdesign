@@ -15,3 +15,4 @@ Checks if an object if of class goelz. Used by many goelz definition functions.
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}
 }
+\keyword{internal}

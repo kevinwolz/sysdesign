@@ -15,3 +15,4 @@ Counts total plants in Goelz Triangle design. Used by \code{\link{goelz}}.
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}
 }
+\keyword{internal}

@@ -16,3 +16,4 @@ Used by \code{\link{goelz}}, \code{\link{goelz_add_border}}, and \code{\link{A_t
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}
 }
+\keyword{internal}

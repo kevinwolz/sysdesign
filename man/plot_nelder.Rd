@@ -39,7 +39,8 @@ dat <- nelder(DN         = 1000,
 plot_nelder(data = dat)
 }
 \seealso{
-Other plot functions: \code{\link{plot_goelz}}
+Other plot functions: \code{\link{plot_goelz}},
+  \code{\link{plot_nelder_biculture_competition}}
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}
