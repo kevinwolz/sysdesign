@@ -435,7 +435,7 @@ select_optimal_goelz <- function(optim.results) {
   for(i in 1:length(best.designs)) {
     out <- goelz(N = N) %>%
       dplyr::arrange(zone, zone.id) %>%
-      A_to_triangle(A.species = best.design[[i]]$species)
+      A_to_triangle(A.species = best.designs[[i]]$species)
     OUT <- c(OUT, list(out))
   }
 
