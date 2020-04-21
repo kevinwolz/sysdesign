@@ -100,8 +100,10 @@ plot_nelder <- function(data,
 #' Use "none" for no variation in point borders.
 #' @param label A character string indicating the column name of \code{data} to use for labels on each point.
 #' Use "none" for no labels.
-#' @param fill.palette A character vector indicating the color palette of used for point fill.
-#' @param color.palette A character vector indicating the color palette of used for point borders.
+#' @param fill.discrete.palette A character vector indicating the color palette of used for point fill.
+#' @param color.discrete.palette A character vector indicating the color palette of used for point borders.
+#' @param fill.continuous.palette ggplot2 function for a continuous color palette used for point fill.
+#' @param color.continuous.palette ggplot2 function for a continuous color palette used for point color
 #' @param corners Logical indicating whether or not to plot red X's at each corner of the rectangle containing the design.
 #' @param guides Logical indicating whether or not to plot red +'s as guides at the extremes of each row in the design.
 #' @param legend Logical indicating whether or not to include a legend for fill and color values.
@@ -117,41 +119,51 @@ plot_goelz <- function(data,
                        fill    = "species",
                        color   = "border",
                        label   = "none",
-                       fill.palette  = c("grey50", "white", "#E69F00", "#56B4E9",
-                                         "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"),
-                       color.palette = c("black", "green", "red", "blue", "orange", "purple"),
+                       fill.discrete.palette    = c("grey50", "white", "#E69F00", "#56B4E9",
+                                                    "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"),
+                       color.discrete.palette   = c("black", "green", "red", "blue", "orange", "purple"),
+                       fill.continuous.palette  = viridis::scale_fill_viridis(option = "magma"),
+                       color.continuous.palette = viridis::scale_color_viridis(option = "magma"),
                        corners = FALSE,
                        guides  = FALSE,
                        legend  = TRUE){
 
-  allowed.cols <- c("species", "zone", "border")
   goelz_class_check(data)
   if(!(is.numeric(size) & length(size) == 1))     stop("size must be numeric and of length 1",         call. = FALSE)
   if(!(is.character(label) & length(label) == 1)) stop("label must be a character vector of length 1", call. = FALSE)
-  if(!is.character(fill.palette))                 stop("fill.palette must be a character vector",      call. = FALSE)
-  if(!is.character(color.palette))                stop("color.palette must be a character vector",     call. = FALSE)
+  if(!is.character(fill.discrete.palette))        stop("fill.palette must be a character vector",      call. = FALSE)
+  if(!is.character(color.discrete.palette))       stop("color.palette must be a character vector",     call. = FALSE)
   if(!is.logical(corners))                        stop("corners must be a logical",                    call. = FALSE)
   if(!is.logical(guides))                         stop("guides must be a logical",                     call. = FALSE)
-  if(!(fill %in% allowed.cols & length(fill) == 1))
-    stop("fill must be one of: species, zone, border", call. = FALSE)
-  if(!(color %in% c(allowed.cols, "none") & length(color) == 1))
-    stop("color must be one of: species, zone, border, none", call. = FALSE)
+  if(!(fill  %in% names(data)))                   stop("fill must be a column name in data",            call. = FALSE)
+  if(!(color %in% c("none", names(data))))        stop("color must be a column name in data or 'none'", call. = FALSE)
 
   data$species <- factor(data$species)
 
   plot.obj <- ggplot(data, aes(x = x.field, y = y.field)) +
     theme_void() +
     coord_equal() +
-    scale_fill_manual(values = fill.palette) +
     theme(legend.position = ifelse(legend, "right", "none"))
+
+  if(is.numeric(data[[fill]])) {
+    plot.obj <- plot.obj +
+      fill.continuous.palette
+  } else {
+    plot.obj <- plot.obj +
+      scale_fill_manual(values = fill.discrete.palette)
+  }
 
   if(color == "none") {
     plot.obj <- plot.obj +
-      geom_point(size = size, shape = 21, aes_string(fill = fill))
+      geom_point(size = size, shape = 21, aes_string(fill = fill), color = color.discrete.palette[1])
+  } else if(is.numeric(data[[color]])) {
+    plot.obj <- plot.obj +
+      geom_point(size = size, shape = 21, aes_string(fill = fill, color = color)) +
+      color.continuous.palette
   } else {
     plot.obj <- plot.obj +
       geom_point(size = size, shape = 21, aes_string(fill = fill, color = color)) +
-      scale_color_manual(values = color.palette)
+      scale_color_manual(values = color.discrete.palette)
   }
 
   if(label != "none") plot.obj <- plot.obj + geom_text(aes_string(label = label))

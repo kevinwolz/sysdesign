@@ -5,10 +5,14 @@
 \title{Plot a Goelz Triangle experimental design}
 \usage{
 plot_goelz(data, size = 4, fill = "species", color = "border",
-  label = "none", fill.palette = c("grey50", "white", "#E69F00",
-  "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"),
-  color.palette = c("black", "green", "red", "blue", "orange", "purple"),
-  corners = FALSE, guides = FALSE, legend = TRUE)
+  label = "none", fill.discrete.palette = c("grey50", "white",
+  "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00",
+  "#CC79A7"), color.discrete.palette = c("black", "green", "red", "blue",
+  "orange", "purple"),
+  fill.continuous.palette = viridis::scale_fill_viridis(option =
+  "magma"),
+  color.continuous.palette = viridis::scale_color_viridis(option =
+  "magma"), corners = FALSE, guides = FALSE, legend = TRUE)
 }
 \arguments{
 \item{data}{An object of class 'goelz' created via \code{\link{goelz}} with \code{split} = FALSE.}
@@ -23,9 +27,13 @@ Use "none" for no variation in point borders.}
 \item{label}{A character string indicating the column name of \code{data} to use for labels on each point.
 Use "none" for no labels.}
 
-\item{fill.palette}{A character vector indicating the color palette of used for point fill.}
+\item{fill.discrete.palette}{A character vector indicating the color palette of used for point fill.}
 
-\item{color.palette}{A character vector indicating the color palette of used for point borders.}
+\item{color.discrete.palette}{A character vector indicating the color palette of used for point borders.}
+
+\item{fill.continuous.palette}{ggplot2 function for a continuous color palette used for point fill.}
+
+\item{color.continuous.palette}{ggplot2 function for a continuous color palette used for point color}
 
 \item{corners}{Logical indicating whether or not to plot red X's at each corner of the rectangle containing the design.}
 
