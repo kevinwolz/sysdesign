@@ -4,8 +4,18 @@
 \alias{run_ga}
 \title{Run genetic algorithm}
 \usage{
-run_ga(control, population, layout, layout.comp, LAMBDA, MAX.GEN, P.RECOMB,
-  RECOMB, P.MUT, save.path)
+run_ga(
+  control,
+  population,
+  layout,
+  layout.comp,
+  LAMBDA,
+  MAX.GEN,
+  P.RECOMB,
+  RECOMB,
+  P.MUT,
+  save.path
+)
 }
 \value{
 A list containing fitness stats and population data.

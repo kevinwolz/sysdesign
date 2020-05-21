@@ -4,9 +4,17 @@
 \alias{nelder_biculture_optim}
 \title{Create a compeition-conformity-optimized Biculture Nelder Fan experimental design}
 \usage{
-nelder_biculture_optim(data, save.path = ".", MU = 100, LAMBDA = MU,
-  MAX.GEN = 150, P.RECOMB = 1, RECOMB = 0.1, P.MUT = 1,
-  MUT = 0.05)
+nelder_biculture_optim(
+  data,
+  save.path = ".",
+  MU = 100,
+  LAMBDA = MU,
+  MAX.GEN = 150,
+  P.RECOMB = 1,
+  RECOMB = 0.1,
+  P.MUT = 1,
+  MUT = 0.05
+)
 }
 \arguments{
 \item{data}{An object of class nelder-biculture.}

@@ -4,9 +4,17 @@
 \alias{goelz_optim}
 \title{Create conformity-optimized Goelz Triangle experimental designs}
 \usage{
-goelz_optim(data, save.path = ".", MU = 100, LAMBDA = MU,
-  MAX.GEN = 150, P.RECOMB = 1, RECOMB = 0.1, P.MUT = 1,
-  MUT = 0.005)
+goelz_optim(
+  data,
+  save.path = ".",
+  MU = 100,
+  LAMBDA = MU,
+  MAX.GEN = 150,
+  P.RECOMB = 1,
+  RECOMB = 0.1,
+  P.MUT = 1,
+  MUT = 0.005
+)
 }
 \arguments{
 \item{data}{An object of class goelz.}

@@ -4,7 +4,17 @@
 \alias{nelder_calc}
 \title{Calculate Nelder Fan design}
 \usage{
-nelder_calc(alpha, theta, tau, D1, N, max.angle, n.spokes, spoke.borders)
+nelder_calc(
+  alpha,
+  theta,
+  tau,
+  D1,
+  N,
+  max.angle,
+  n.spokes,
+  arc.borders,
+  spoke.borders
+)
 }
 \arguments{
 \item{alpha}{Rate of change along the spokes.}

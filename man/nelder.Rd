@@ -4,7 +4,16 @@
 \alias{nelder}
 \title{Create a Nelder Fan experimental design}
 \usage{
-nelder(DN, D1, N, tau = 1, even = FALSE, max.angle = 360)
+nelder(
+  DN,
+  D1,
+  N,
+  tau = 1,
+  even = FALSE,
+  max.angle = 360,
+  arc.borders = 1,
+  spoke.borders = 1
+)
 }
 \arguments{
 \item{DN}{Plant density within the last experimental arc (plants ha-1)

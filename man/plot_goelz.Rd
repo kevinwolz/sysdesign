@@ -4,15 +4,21 @@
 \alias{plot_goelz}
 \title{Plot a Goelz Triangle experimental design}
 \usage{
-plot_goelz(data, size = 4, fill = "species", color = "border",
-  label = "none", fill.discrete.palette = c("grey50", "white",
-  "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00",
-  "#CC79A7"), color.discrete.palette = c("black", "green", "red", "blue",
-  "orange", "purple"),
-  fill.continuous.palette = viridis::scale_fill_viridis(option =
-  "magma"),
-  color.continuous.palette = viridis::scale_color_viridis(option =
-  "magma"), corners = FALSE, guides = FALSE, legend = TRUE)
+plot_goelz(
+  data,
+  size = 4,
+  fill = "species",
+  color = "border",
+  label = "none",
+  fill.discrete.palette = c("grey50", "white", "#E69F00", "#56B4E9", "#009E73",
+    "#F0E442", "#0072B2", "#D55E00", "#CC79A7"),
+  color.discrete.palette = c("black", "green", "red", "blue", "orange", "purple"),
+  fill.continuous.palette = viridis::scale_fill_viridis(option = "magma"),
+  color.continuous.palette = viridis::scale_color_viridis(option = "magma"),
+  corners = FALSE,
+  guides = FALSE,
+  legend = TRUE
+)
 }
 \arguments{
 \item{data}{An object of class 'goelz' created via \code{\link{goelz}} with \code{split} = FALSE.}

@@ -4,8 +4,15 @@
 \alias{plot_nelder}
 \title{Plot a Nelder Fan experimental design}
 \usage{
-plot_nelder(data, size = 3, fill.palette = c("black", "white"),
-  species = TRUE, legend = FALSE, ex.area = FALSE, caption = FALSE)
+plot_nelder(
+  data,
+  size = 3,
+  fill.palette = c("black", "white"),
+  species = TRUE,
+  legend = FALSE,
+  ex.area = FALSE,
+  caption = FALSE
+)
 }
 \arguments{
 \item{data}{An object of class 'nelder' created via \code{\link{nelder}}.}
