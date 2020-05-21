@@ -4,7 +4,7 @@
 \alias{nelder_interspoke_distance}
 \title{Calculate distance between two individuals in the same arc and adjacent spokes of a Nelder Fan experimental design}
 \usage{
-nelder_interspoke_distance(data, arc = data$plot$arcs)
+nelder_interspoke_distance(data, a = data$plot$arcs)
 }
 \arguments{
 \item{data}{An object of class nelder.}

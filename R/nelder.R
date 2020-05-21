@@ -459,9 +459,12 @@ nelder_biculture_competition <- function(data, search.radius = NULL) {
 #'               even       = TRUE,
 #'               max.angle  = 360)
 #' nelder_interspoke_distance(dat)
-nelder_interspoke_distance <- function(data, arc = data$plot$arcs) {
-  two.points <- out$plants %>%
-    dplyr::filter(arc == max(arc)) %>%
+nelder_interspoke_distance <- function(data, a = data$plot$arcs) {
+
+  nelder_class_check(data)
+
+  two.points <- data$plants %>%
+    dplyr::filter(arc == a) %>%
     dplyr::filter(spoke %in% 1:2)
 
   out <- sqrt((two.points$x.field[1] - two.points$x.field[2])^2 + (two.points$y.field[1] - two.points$y.field[2])^2)
