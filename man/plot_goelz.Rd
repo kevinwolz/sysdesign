@@ -52,8 +52,9 @@ dat <- goelz(N = 35, reps = 1, split = FALSE)
 plot_goelz(data = dat)
 }
 \seealso{
-Other plot functions: \code{\link{plot_nelder_biculture_competition}},
-  \code{\link{plot_nelder}}
+Other plot functions: 
+\code{\link{plot_nelder_biculture_competition}()},
+\code{\link{plot_nelder}()}
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}

@@ -25,8 +25,9 @@ dat.bi <- nelder_biculture(data = dat)
 plot_nelder_biculture_competition(data = dat.bi)
 }
 \seealso{
-Other plot functions: \code{\link{plot_goelz}},
-  \code{\link{plot_nelder}}
+Other plot functions: 
+\code{\link{plot_goelz}()},
+\code{\link{plot_nelder}()}
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}

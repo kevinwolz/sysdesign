@@ -20,16 +20,21 @@ optim.dat <- nelder_biculture_optim()
 my_nelder <- select_optimal_nelder_biculture(optim.results = optim.dat)
 }
 \seealso{
-Other definition functions: \code{\link{goelz_add_border}},
-  \code{\link{goelz_corners}}, \code{\link{goelz_guides}},
-  \code{\link{goelz_mirror}}, \code{\link{goelz_optim}},
-  \code{\link{goelz_starts}}, \code{\link{goelz}},
-  \code{\link{nelder_biculture_competition}},
-  \code{\link{nelder_biculture_optim}},
-  \code{\link{nelder_biculture}},
-  \code{\link{nelder_decision}},
-  \code{\link{nelder_interspoke_distance}},
-  \code{\link{nelder}}, \code{\link{select_optimal_goelz}}
+Other definition functions: 
+\code{\link{goelz_add_border}()},
+\code{\link{goelz_corners}()},
+\code{\link{goelz_guides}()},
+\code{\link{goelz_mirror}()},
+\code{\link{goelz_optim}()},
+\code{\link{goelz_starts}()},
+\code{\link{goelz}()},
+\code{\link{nelder_biculture_competition}()},
+\code{\link{nelder_biculture_optim}()},
+\code{\link{nelder_biculture}()},
+\code{\link{nelder_decision}()},
+\code{\link{nelder_interspoke_distance}()},
+\code{\link{nelder}()},
+\code{\link{select_optimal_goelz}()}
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}

@@ -55,17 +55,21 @@ dat <- goelz_optim()
 }
 }
 \seealso{
-Other definition functions: \code{\link{goelz_add_border}},
-  \code{\link{goelz_corners}}, \code{\link{goelz_guides}},
-  \code{\link{goelz_mirror}}, \code{\link{goelz_starts}},
-  \code{\link{goelz}},
-  \code{\link{nelder_biculture_competition}},
-  \code{\link{nelder_biculture_optim}},
-  \code{\link{nelder_biculture}},
-  \code{\link{nelder_decision}},
-  \code{\link{nelder_interspoke_distance}},
-  \code{\link{nelder}}, \code{\link{select_optimal_goelz}},
-  \code{\link{select_optimal_nelder_biculture}}
+Other definition functions: 
+\code{\link{goelz_add_border}()},
+\code{\link{goelz_corners}()},
+\code{\link{goelz_guides}()},
+\code{\link{goelz_mirror}()},
+\code{\link{goelz_starts}()},
+\code{\link{goelz}()},
+\code{\link{nelder_biculture_competition}()},
+\code{\link{nelder_biculture_optim}()},
+\code{\link{nelder_biculture}()},
+\code{\link{nelder_decision}()},
+\code{\link{nelder_interspoke_distance}()},
+\code{\link{nelder}()},
+\code{\link{select_optimal_goelz}()},
+\code{\link{select_optimal_nelder_biculture}()}
 }
 \author{
 Kevin J Wolz, \email{kevin@savannainstitute.org}
