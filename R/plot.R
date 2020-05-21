@@ -203,16 +203,16 @@ plot_nelder_biculture_competition <- function(data, plot = TRUE) {
                                    levels = c("A", "B"),
                                    labels = c("Species A", "Species B")))
 
-  plot.obj <- ggplot2::ggplot(plot.data, aes(x     = arc,
-                                                y     = A.neighbors,
-                                                fill  = dens,
-                                                label = dens)) +
-    ggplot2::labs(x    = "Arc #",
-                  y    = "# of A Neighbors",
-                  fill = "# of Individuals") +
-    ggplot2::geom_raster(na.rm = TRUE) +
-    ggplot2::geom_text(color = "white") +
-    ggplot2::facet_wrap(~species)
+  plot.obj <- ggplot(plot.data, aes(x     = arc,
+                                    y     = A.neighbors,
+                                    fill  = dens,
+                                    label = dens)) +
+    labs(x    = "Arc #",
+         y    = "# of A Neighbors",
+         fill = "# of Individuals") +
+    geom_raster(na.rm = TRUE) +
+    geom_text(color = "white") +
+    facet_wrap(~species)
 
   if(requireNamespace("viridis", quietly = TRUE)) {
     plot.obj <- plot.obj +
