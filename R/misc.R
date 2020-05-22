@@ -223,3 +223,24 @@ select_optimal <- function(x) {
 
   return(best.designs)
 }
+
+#' Add a column with species names
+#' @description Adds a column with species names.
+#' @return An object of the same class as data.
+#' @param data An object of class nelder-biculture or goelz.
+#' @param sp.names A vector of species names. Must be of length 2 when data is of class nelder-biculture and length 3 when data is of class goelz.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @export
+name_species <- function(data, sp.names) {
+  if("nelder-biculture" %in% class(data)) {
+    if(length(sp.names) != 2) stop("sp.names must be of length 2 when data is of class nelder-biculture", call. = FALSE)
+    data$plants <- dplyr::mutate(data$plants, species.name = as.character(factor(species, labels = sp.names)))
+  } else if("goelz" %in% class(data)) {
+    if(length(sp.names) != 3) stop("sp.names must be of length 3 when data is of class nelder-biculture", call. = FALSE)
+    data <- dplyr::mutate(data, species.name = as.character(factor(species, labels = sp.names)))
+  } else {
+    stop("data must be of class nelder-biculture or goelz", call. = FALSE)
+  }
+
+  return(data)
+}
