@@ -80,11 +80,11 @@ plot_nelder <- function(data,
 
   if(species & "species" %in% names(data$plants)) {
     plot.obj <- plot.obj +
-      geom_point(aes(x = r, y = theta, fill = species, shape = exp), size = size)
+      geom_point(aes(x = r, y = theta, fill = species, shape = border), size = size)
 
   } else {
     plot.obj <- plot.obj +
-      geom_point(aes(x = r, y = theta, shape = exp), size = size, fill = "black")
+      geom_point(aes(x = r, y = theta, shape = border), size = size, fill = "black")
   }
 
   return(plot.obj)

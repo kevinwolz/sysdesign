@@ -217,7 +217,7 @@ nelder_biculture <- function(data, comps = NULL) {
       if(data$plot$spokes %% 2 != 0) stop("when max.angle = 360,
                                             data must have an even number of spokes", call. = FALSE)
       inc.length <- data$plot$spokes / 2 + 1
-      inc.seq <- seq(0, 1, length.out = inc.length)
+      inc.seq <- rev(seq(0, 1, length.out = inc.length))
       dec.seq <- rev(inc.seq[c(-1, -length(inc.seq))])
       comps <- c(inc.seq, dec.seq)
     } else {
@@ -232,7 +232,6 @@ nelder_biculture <- function(data, comps = NULL) {
   data <- assign_species(data = data, comps = comps)
 
   ## STATS
-  data$plants$species    <- factor(data$plants$species)
   data$species.counts    <- table(data$plants$species)
   data$spoke.composition <- dplyr::tibble(spoke   = 1:data$plot$spokes,
                                           A.ratio = comps,
@@ -565,8 +564,7 @@ nelder_calc <- function(alpha, theta, tau, D1, N, max.angle, n.spokes, arc.borde
     dplyr::left_join(arc.dat, by = "arc") %>%
     dplyr::mutate(x.field = r * cos(theta * pi / 180)) %>%
     dplyr::mutate(y.field = r * sin(theta * pi / 180)) %>%
-    dplyr::mutate(exp     = (spoke %in% spoke.border.ids) | (arc %in% arc.border.ids)) %>%
-    dplyr::mutate(exp     = factor(exp, levels = c(FALSE, TRUE), labels = c("Experimental", "Border")))
+    dplyr::mutate(border  = (spoke %in% spoke.border.ids) | (arc %in% arc.border.ids))
 
   temp.dat <- list(plants = plant.dat)
   class(temp.dat) <- "nelder"
