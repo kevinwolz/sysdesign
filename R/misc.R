@@ -32,6 +32,9 @@ yard_to_feet_frac <- function(y) {
 #' @keywords internal
 run_ga <- function(control, population, layout, layout.comp, LAMBDA, MAX.GEN, P.RECOMB, RECOMB, P.MUT, save.path) {
 
+  parallelMap::parallelRegisterLevels(package = "ecr",
+                                      levels = c("evaluateFitness", "generateOffspring", "computeDominanceRanking", "computeIndicators"))
+
   control <- control %>%
     ecr::registerECROperator(slot = "recombine",
                              fun  = ecr::setup(ecr::recUnifCrossover, p = RECOMB)) %>%
