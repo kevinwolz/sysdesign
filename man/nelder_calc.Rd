@@ -32,7 +32,9 @@ nelder_calc(
 
 \item{n.spokes}{The number of spokes.}
 
-\item{spoke.borders}{Logical indicating whether or not there are spokes required to be border spokes.}
+\item{arc.borders}{Number of border arcs on either extreme.}
+
+\item{spoke.borders}{Number of border spokes on either extreme (only used if max.angle < 360).}
 }
 \value{
 A list containing the plant and plot data.

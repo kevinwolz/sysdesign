@@ -36,6 +36,10 @@ evenly into \code{max.angle} (i.e. so that there are no spokes that must be remo
 spokes).}
 
 \item{max.angle}{The maximum rotation (in degrees) of the design. If 360, then a full circle design will be created.}
+
+\item{arc.borders}{Number of border arcs on either extreme.}
+
+\item{spoke.borders}{Number of border spokes on either extreme (only used if max.angle < 360).}
 }
 \value{
 An object of class sysd and class nelder. This is a list of 3 elements:

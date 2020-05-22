@@ -27,6 +27,8 @@
 #' evenly into \code{max.angle} (i.e. so that there are no spokes that must be removed from the experiment as border
 #' spokes).
 #' @param max.angle The maximum rotation (in degrees) of the design. If 360, then a full circle design will be created.
+#' @param arc.borders Number of border arcs on either extreme.
+#' @param spoke.borders Number of border spokes on either extreme (only used if max.angle < 360).
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @references
 #' \itemize{
@@ -47,23 +49,27 @@
 #'                tau        = 1,
 #'                even       = TRUE,
 #'                max.angle  = 360)
-nelder <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
+nelder <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360, arc.borders = 1, spoke.borders = 1) {
 
-  if(!(is.numeric(D1) & (D1 %% 1 == 0) & length(D1) == 1)) stop("D1 must an integer and of length 1", call. = FALSE)
-  if(!(is.numeric(DN) & (DN %% 1 == 0) & length(DN) == 1)) stop("DN must an integer and of length 1", call. = FALSE)
-  if(!(is.numeric(N) & (N %% 1 == 0) & length(N) == 1 & N > 2)) stop("N must be an integer greater than 2",
-                                                                     call. = FALSE)
-  if(D1 <= DN)                              stop("D1 must be greater than DN",                   call. = FALSE)
-  if(!(is.numeric(tau) & length(tau) == 1)) stop("tau argument must be numeric and of length 1", call. = FALSE)
-  if(!is.logical(even))                     stop("even argument must be a logical",              call. = FALSE)
-  if(max.angle > 360 | max.angle <= 0)      stop("max.angle argument must be between 0 and 360", call. = FALSE)
+  if(!(is.numeric(D1) & (D1 %% 1 == 0) & length(D1) == 1))         stop("D1 must an integer", call. = FALSE)
+  if(!(is.numeric(DN) & (DN %% 1 == 0) & length(DN) == 1))         stop("DN must an integer", call. = FALSE)
+  if(!(is.numeric(N)  & (N  %% 1 == 0) & length(N)  == 1 & N > 2)) stop("N must be an integer greater than 2", call. = FALSE)
+  if(D1 <= DN)                              stop("D1 must be greater than DN",                    call. = FALSE)
+  if(!(is.numeric(tau) & length(tau) == 1)) stop("tau must be numeric and of length 1",           call. = FALSE)
+  if(!is.logical(even))                     stop("even must be a logical",                        call. = FALSE)
+  if(max.angle > 360 | max.angle <= 0)      stop("max.angle must be between 0 and 360",           call. = FALSE)
+  if(!(is.numeric(arc.borders) & (arc.borders %% 1 == 0) & length(arc.borders) == 1 & arc.borders >= 1))
+    stop("arc.borders must be an integer greater than 0", call. = FALSE)
+  if(!(is.numeric(spoke.borders) & (spoke.borders %% 1 == 0) & length(spoke.borders) == 1 & spoke.borders >= 0))
+    stop("spoke.borders must be a positive integer", call. = FALSE)
+  if(max.angle < 360 & spoke.borders == 0) stop("spoke.borders must be greater than 0 when max.angle is less than 360", call. = FALSE)
 
   max.angle.rad <- max.angle * pi / 180  # radians
 
   ## ORIGINAL VALUES WITHOUT EVEN SPOKE OPTIMIZATION
   tau.orig      <- tau
-  alpha.orig    <- exp((log(D1) - log(DN)) / (2 * N - 2))
-  theta.orig    <- tau.orig * (alpha.orig ^ 0.5 - alpha.orig ^ -0.5) # radians
+  alpha.orig    <- exp((log(D1) - log(DN)) / (2 * N - 2))            # Parrot et al. (2012) - Eq. 1
+  theta.orig    <- tau.orig * (alpha.orig ^ 0.5 - alpha.orig ^ -0.5) # radians - Parrot et al. 2012 - (Eq. 3)
   n.spokes.orig <- ceiling(max.angle.rad / theta.orig)
 
   orig.dat <- nelder_calc(alpha         = alpha.orig,
@@ -73,7 +79,8 @@ nelder <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
                           N             = N,
                           max.angle     = max.angle,
                           n.spokes      = n.spokes.orig,
-                          spoke.borders = TRUE)
+                          arc.borders   = arc.borders,
+                          spoke.borders = spoke.borders)
 
   ## NEW VALUES WITH EVEN SPOKE OPTIMIZATION
   n.spokes <- round(max.angle.rad / theta.orig)
@@ -90,7 +97,8 @@ nelder <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
                           N             = N,
                           max.angle     = max.angle,
                           n.spokes      = n.spokes,
-                          spoke.borders = max.angle != 360)
+                          arc.borders   = arc.borders,
+                          spoke.borders = spoke.borders)
 
   if(even) {
     even.spoke.dat <- dplyr::bind_rows(orig.dat$plot, even.dat$plot) %>%
@@ -125,6 +133,8 @@ nelder <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
 #' evenly into \code{max.angle} (i.e. so that there are no spokes that must be removed from the experiment as border
 #' spokes).
 #' @param max.angle The maximum rotation (in degrees) of the design. If 360, then a full circle design will be created.
+#' @param arc.borders Number of border arcs on either extreme.
+#' @param spoke.borders Number of border spokes on either extreme (only used if max.angle < 360).
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @export
 #' @family definition functions
@@ -135,19 +145,25 @@ nelder <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
 #'                        tau        = 1,
 #'                        even       = TRUE,
 #'                        max.angle  = c(90, 180, 360))
-nelder_decision <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360) {
-  test.cases <- expand.grid(DN = DN, D1 = D1, N = N, tau = tau, even = even, max.angle = max.angle)
+nelder_decision <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360, arc.borders = 1, spoke.borders = 1) {
+  test.cases <- expand.grid(DN = DN, D1 = D1, N = N, tau = tau, even = even, max.angle = max.angle,
+                            arc.borders = arc.borders, spoke.borders = spoke.borders)
 
   OUT <- dplyr::tibble()
   for(i in 1:nrow(test.cases)) {
-    out <- nelder(DN        = test.cases$DN[i],
-                  D1        = test.cases$D1[i],
-                  N         = test.cases$N[i],
-                  tau       = test.cases$tau[i],
-                  even      = test.cases$even[i],
-                  max.angle = test.cases$max.angle[i])
+    out <- nelder(DN            = test.cases$DN[i],
+                  D1            = test.cases$D1[i],
+                  N             = test.cases$N[i],
+                  tau           = test.cases$tau[i],
+                  even          = test.cases$even[i],
+                  max.angle     = test.cases$max.angle[i],
+                  arc.borders   = test.cases$arc.borders[i],
+                  spoke.borders = test.cases$spoke.borders[i])
     OUT <- dplyr::bind_rows(OUT, out$plot)
   }
+
+  OUT <- dplyr::select(OUT, -max.angle)
+
   return(dplyr::bind_cols(test.cases, OUT))
 }
 
@@ -484,59 +500,77 @@ nelder_interspoke_distance <- function(data, a = data$plot$arcs) {
 #' @param N Number of experimental arcs (i.e. number of densities to be tested within D1 to DN).
 #' @param max.angle The maximum rotation (in degrees) of the design. If 360, then a full circle design will be created.
 #' @param n.spokes The number of spokes.
-#' @param spoke.borders Logical indicating whether or not there are spokes required to be border spokes.
+#' @param arc.borders Number of border arcs on either extreme.
+#' @param spoke.borders Number of border spokes on either extreme (only used if max.angle < 360).
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @importFrom dplyr %>%
 #' @keywords internal
-nelder_calc <- function(alpha, theta, tau, D1, N, max.angle, n.spokes, spoke.borders) {
+nelder_calc <- function(alpha, theta, tau, D1, N, max.angle, n.spokes, arc.borders, spoke.borders) {
 
-  Co <- (2 - (alpha + alpha ^ -1)) / (2 * (alpha - alpha ^ -1)) * 100
-  r0 <- sqrt(20000 / (D1 * theta * (alpha ^ 3 - alpha))) # m
+  n.arcs <- N + 2 * arc.borders
+  spoke.borders <- ifelse(max.angle < 360, spoke.borders, 0)
 
-  arc.dat <- dplyr::tibble(arc     = c(0:(N + 1)),
-                           r       = r0 * alpha ^ arc,                         # m
-                           space   = theta * r ^ 2 * (alpha - alpha ^ -1) / 2, # m2
-                           density = 10000 / space)                            # plants ha-1
+  if((2 * spoke.borders) > n.spokes) stop("there are too many spoke borders for this size design", call. = FALSE)
 
-  arc.dat$space[c(1, N + 2)]   <- NA
-  arc.dat$density[c(1, N + 2)] <- NA
+  spoke.border.ids <- c(head(1:n.spokes, spoke.borders), tail(1:n.spokes, spoke.borders))
+  arc.border.ids   <- c(head(1:n.arcs,    arc.borders),  tail(1:n.arcs,   arc.borders))
 
-  plot.dat <- dplyr::tibble(area           = pi * tail(arc.dat$r, 1) ^ 2 / 10000 * max.angle / 360, # ha
-                            arcs           = N + 2,
-                            exp.arcs       = N,
-                            spokes         = n.spokes,
-                            exp.spokes     = ifelse(spoke.borders, n.spokes - 2, n.spokes),
-                            r0             = r0,
-                            rmax           = max(arc.dat$r),
-                            alpha          = alpha,
-                            angle          = theta * 180 / pi,
-                            max.angle      = max.angle,
-                            rectangularity = tau,
-                            non.centrality = Co,
-                            min.density    = min(arc.dat$density, na.rm = TRUE),
-                            max.density    = D1,
-                            plants         = (N + 2) * n.spokes)
+  Co <- (2 - (alpha + alpha ^ -1)) / (2 * (alpha - alpha ^ -1)) * 100 # % - Parrot et al. (2012) - Eq. 2
+  r0 <- sqrt(20000 / (D1 * theta * (alpha ^ 3 - alpha)))              # m - Parrot et al. (2012) - Eq. 4
 
-  if(max.angle < 360) plot.dat$spokes <- plot.dat$spokes + 1
+  arc.dat <- dplyr::tibble(arc     = 1:n.arcs,
+                           r       = r0 * alpha ^ (arc - 1 - (arc.borders - 1)), # m           - Parrot et al. (2012) - Eq. 5 (modified **)
+                           space   = theta * r ^ 2 * (alpha - alpha ^ -1) / 2,   # m2          - Parrot et al. (2012) - Eq. 6
+                           density = 10000 / space)                              # plants ha-1 - Parrot et al. (2012) - Eq. 7
+  # ** The original Eq. 5 from Parrot et al. (2012) reads: r = r0 * alpha ^ arc
+  # This equation needs to be modified to adjust for two things:
+  #     (1) arc ids are specified here starting with 1, rather than 0.
+  #     (2) D1 is the density of the innermost *experimental* arc. Parrot et al. (2012) assumes that the design has *one* border
+  #     arc interior to this innermost experimental arc and calculates r0 assuming it is the radious to this single border arc.
+  #     Here, flexibility in the number of border arcs must be allowed via the input parameter arc.borders.
+  # To account for #1, 1 is substracted in the expondnet.
+  # To account for #2, (arc.borders - 1) is subsracted in the exponent (-1 is included because Eq. 5 already assumes 1 border arc).
+
+  arc.dat[arc.border.ids, c("space", "density")] <- NA
+
+  plot.dat <- dplyr::tibble(area            = pi * max(arc.dat$r) ^ 2 / 10000 * max.angle / 360, # ha - Parrot et al. (2012) - Eq. 8 (modified **)
+                            arcs            = n.arcs,
+                            exp.arcs        = N,
+                            spokes          = n.spokes,
+                            exp.spokes      = n.spokes - 2 * spoke.borders,
+                            rmin            = min(arc.dat$r),
+                            rmax            = max(arc.dat$r),
+                            alpha           = alpha,
+                            angle           = theta * 180 / pi, # convert to degrees
+                            max.angle       = max.angle,
+                            rectangularity  = tau,
+                            non.centrality  = Co,
+                            min.exp.density = min(arc.dat$density, na.rm = TRUE),
+                            max.exp.density = max(arc.dat$density, na.rm = TRUE),
+                            plants          = arcs * spokes,
+                            exp.plants      = exp.arcs * exp.spokes,
+                            perc.exp        = round(exp.plants / plants * 100))
+  # ** The original Eq. 8 from Parrot et al. (2012) reads: area = pi * r(N+1) ^ 2 / 10000
+  # This equation needs to be modified to adjust for two things:
+  #     (1) Parrot et al. (2012) assumes that the design has *one* border arc exterior to the outermost experimental arc (the N+1 in the Eq).
+  #     Here, flexibility in the number of border arcs must be allowed via the input parameter arc.borders.
+  #     (2) Parrot et al. (2012) assumes a full 360-degree design.
+  #     Here, flexiblity in the shape of the design must be allowed via the input parameter max.angle
+  # To account for #1, max(arc.dat$r) is used to replace r(N+1).
+  # To account for #2, (max.angle / 360) is multiplied as well.
 
   plant.dat <- dplyr::tibble(spoke  = rep(1:plot.dat$spokes, each  = plot.dat$arcs),
                              arc    = rep(arc.dat$arc,       times = plot.dat$spokes),
                              theta  = rep(plot.dat$angle * 0:(plot.dat$spokes - 1), each = plot.dat$arcs)) %>%
     dplyr::left_join(arc.dat, by = "arc") %>%
     dplyr::mutate(x.field = r * cos(theta * pi / 180)) %>%
-    dplyr::mutate(y.field = r * sin(theta * pi / 180))
+    dplyr::mutate(y.field = r * sin(theta * pi / 180)) %>%
+    dplyr::mutate(exp     = (spoke %in% spoke.border.ids) | (arc %in% arc.border.ids)) %>%
+    dplyr::mutate(exp     = factor(exp, levels = c(FALSE, TRUE), labels = c("Experimental", "Border")))
 
-  ## DESIGNATE EXPERIMENTAL VS BORDER ROWS
-  if(spoke.borders) {
-    plant.dat <- dplyr::mutate(plant.dat, exp = (theta %in% range(theta)) | (arc %in% range(arc)))
-  } else {
-    plant.dat <- dplyr::mutate(plant.dat, exp = arc %in% range(arc))
-  }
-  plant.dat <- dplyr::mutate(plant.dat, exp = factor(exp, levels = c(FALSE, TRUE), labels = c("Experimental", "Border")))
-
-  plot.dat <- plot.dat %>%
-    dplyr::mutate(exp.plants = sum(plant.dat$exp == "Experimental")) %>%
-    dplyr::mutate(perc.exp   = round(exp.plants / plants * 100))
+  temp.dat <- list(plants = plant.dat)
+  class(temp.dat) <- "nelder"
+  plot.dat <- dplyr::mutate(plot.dat, outer.interspoke.distance = nelder_interspoke_distance(data = temp.dat, a = arcs))
 
   return(list(plants = plant.dat, plot = plot.dat))
 }
