@@ -625,7 +625,7 @@ assign_species <- function(data, comps) {
 
   for(s in 1:data$plot$spokes) {          # randomly select species A spots
     q <- quants[s]
-    a <- sample(x       = 0:(data$plot$arcs - 1),
+    a <- sample(x       = 1:data$plot$arcs,
                 size    = q,
                 replace = FALSE)
     data$plants$species[which(data$plants$spoke == s & data$plants$arc %in% a)] <- "A"
