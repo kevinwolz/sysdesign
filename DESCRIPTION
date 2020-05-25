@@ -1,7 +1,7 @@
 Package: sysdesign
 Type: Package
 Title: An R Toolbox for Creating & Analyzing Systematic Experimental Designs in Biology
-Version: 0.0.6
+Version: 0.0.7
 Author: Kevin J Wolz
 Maintainer: Kevin J Wolz <kevin@savannainstitute.org>
 Description: An R toolbox for creating & analyzing systematic experimental 
@@ -9,12 +9,10 @@ Description: An R toolbox for creating & analyzing systematic experimental
 URL: https://github.com/kevinwolz/sysdesign
 BugReports: https://github.com/kevinwolz/sysdesign/issues
 Depends: R (>= 3.6.1)
-Imports: ggplot2 (>= 3.2.1), 
-    ggtern (>= 3.1.0),
+Imports: ggplot2 (>= 3.3.0),
     dplyr (>= 0.8.3)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0
-Suggests: ecr (>= 2.1.0),
-    viridis (>= 0.5.1)
+Suggests: ecr (>= 2.1.0)

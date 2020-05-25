@@ -122,8 +122,8 @@ plot_goelz <- function(data,
                        fill.discrete.palette    = c("grey50", "white", "#E69F00", "#56B4E9",
                                                     "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"),
                        color.discrete.palette   = c("black", "green", "red", "blue", "orange", "purple"),
-                       fill.continuous.palette  = viridis::scale_fill_viridis(option = "magma"),
-                       color.continuous.palette = viridis::scale_color_viridis(option = "magma"),
+                       fill.continuous.palette  = ggplot2::scale_fill_viridis_c(option = "magma"),
+                       color.continuous.palette = ggplot2::scale_color_viridis_c(option = "magma"),
                        corners = FALSE,
                        guides  = FALSE,
                        legend  = TRUE){
@@ -212,12 +212,8 @@ plot_nelder_biculture_competition <- function(data, plot = TRUE) {
          fill = "# of Individuals") +
     geom_raster(na.rm = TRUE) +
     geom_text(color = "white") +
-    facet_wrap(~species)
-
-  if(requireNamespace("viridis", quietly = TRUE)) {
-    plot.obj <- plot.obj +
-      viridis::scale_fill_viridis(option = "magma")
-  }
+    facet_wrap(~species) +
+    scale_fill_viridis_c(option = "magma")
 
   return(if(plot) plot.obj else plot.data)
 }
