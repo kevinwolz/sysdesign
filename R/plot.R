@@ -43,8 +43,8 @@ plot_nelder <- function(data,
                            "\n# Arcs: ",        data$plot$arcs,   " (", data$plot$exp.arcs, ")",
                            "\n# Angle: ",       round(data$plot$angle, 2),  " degrees",
                            "\n# Plants: ",      data$plot$plants, " (", data$plot$exp.plants, ")",
-                           "\nDensity range: ", round(data$plot$min.density), " - ", data$plot$max.density, " plants/ha",
-                           "\nr0-rmax: ",       round(data$plot$r0,   2),     " - ", round(data$plot$rmax, 2), " m",
+                           "\nDensity range: ", round(data$plot$min.exp.density), " - ", data$plot$max.exp.density, " plants/ha",
+                           "\nr0-rmax: ",       round(data$plot$rmin, 2), " - ", round(data$plot$rmax, 2), " m",
                            "\nPlot area: ",     round(data$plot$area, 2), " ha")
   }
 
