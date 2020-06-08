@@ -195,25 +195,43 @@ plot_nelder_biculture_competition <- function(data, plot = TRUE) {
 
   plot.data <- data %>%
     nelder_biculture_competition() %>%
-    dplyr::group_by(species, arc, A.neighbors) %>%
-    dplyr::filter(!is.na(A.neighbors)) %>%
+    dplyr::mutate(common.neighbors = ifelse(species == "A", A.neighbors, B.neighbors)) %>%
+    dplyr::group_by(species, arc, common.neighbors) %>%
+    dplyr::filter(!is.na(common.neighbors)) %>%
     dplyr::summarize(dens = dplyr::n()) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(species = factor(species,
                                    levels = c("A", "B"),
                                    labels = c("Species A", "Species B")))
 
+  base_size <- 18
+
   plot.obj <- ggplot(plot.data, aes(x     = arc,
-                                    y     = A.neighbors,
+                                    y     = common.neighbors,
                                     fill  = dens,
                                     label = dens)) +
     labs(x    = "Arc #",
-         y    = "# of A Neighbors",
-         fill = "# of Individuals") +
+         y    = "Number of same-species neighbors",
+         fill = "Number of\nindividuals") +
+    scale_x_continuous(breaks = unique(plot.data$arc), expand = c(0,0)) +
+    scale_y_continuous(breaks = 0:8, expand = c(0,0)) +
     geom_raster(na.rm = TRUE) +
-    geom_text(color = "white") +
+    geom_text(aes(color = dens > 6)) +
     facet_wrap(~species) +
-    scale_fill_viridis_c(option = "magma")
+    scale_fill_viridis_c(option = "magma") +
+    scale_color_manual(values = c("white", "black")) +
+    guides(color = FALSE) +
+    coord_equal() +
+    theme_bw(base_size = base_size) +
+    theme(plot.margin       = unit(base_size * c(1,1,1,1), "points"),
+          panel.border      = element_rect(size = 2, color = "black"),
+          axis.text         = element_text(color = "black"),
+          axis.title.x      = element_text(vjust = -1),
+          axis.title.y      = element_text(vjust = 2),
+          legend.key.width  = unit(1.5, "cm"),
+          panel.grid.major  = element_blank(),
+          axis.ticks        = element_line(color = "black"),
+          axis.ticks.length = unit(base_size * 0.25, "points"))
 
   return(if(plot) plot.obj else plot.data)
 }
