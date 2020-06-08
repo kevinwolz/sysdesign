@@ -586,21 +586,21 @@ nelder_fitness <- function(design, layout) {
   layout$plants <- layout$plants %>%
     dplyr::mutate(species = LETTERS[unlist(design)])
 
-  complete.combos <- expand.grid(species     = c("A", "B"),
-                                 arc         = 1:layout$plot$exp.arcs,
-                                 A.neighbors = 0:8) %>%
+  complete.combos <- expand.grid(species          = c("A", "B"),
+                                 arc              = 1:layout$plot$exp.arcs,
+                                 common.neighbors = 0:8) %>%
     dplyr::as_tibble()
 
   out <- layout %>%
     nelder_biculture_competition() %>%
-    dplyr::group_by(species, arc, A.neighbors) %>%
+    dplyr::mutate(common.neighbors = ifelse(species == "A", A.neighbors, B.neighbors)) %>%
+    dplyr::group_by(species, arc, common.neighbors) %>%
+    dplyr::filter(!is.na(common.neighbors)) %>%
     dplyr::summarize(dens = dplyr::n()) %>%
-    dplyr::filter(!is.na(A.neighbors)) %>%
-    dplyr::right_join(complete.combos, by = c("species", "arc", "A.neighbors")) %>%
+    dplyr::right_join(complete.combos, by = c("species", "arc", "common.neighbors")) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(dens = tidyr::replace_na(dens, 0)) %>%
-    dplyr::group_by(species, A.neighbors) %>%
-    #dplyr::summarize(stdev = diff(range(dens))) %>%
+    dplyr::group_by(species, arc) %>%
     dplyr::summarize(stdev = sd(dens)) %>%
     dplyr::ungroup() %>%
     dplyr::summarize(fitness = mean(stdev)) %>%
