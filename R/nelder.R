@@ -440,7 +440,7 @@ nelder_biculture_competition <- function(data, search.radius = NULL) {
     }
 
     neighbor.arcs[neighbor.arcs < 0] <- NA
-    neighbor.arcs[neighbor.arcs > (data$plot$arcs - 1)] <- NA
+    neighbor.arcs[neighbor.arcs > data$plot$arcs] <- NA
 
     neighbors <- data$plants[-i, ] %>%
       dplyr::filter(arc   %in% neighbor.arcs) %>%
@@ -448,7 +448,7 @@ nelder_biculture_competition <- function(data, search.radius = NULL) {
       dplyr::summarize(A = sum(species == "A"),
                        B = sum(species == "B"))
 
-    if(!(a %in% c(0, data$plot$arcs - 1))) {
+    if(!(a %in% c(1, data$plot$arcs))) {
       data$plants$A.neighbors[i] <- neighbors$A
       data$plants$B.neighbors[i] <- neighbors$B
     }
