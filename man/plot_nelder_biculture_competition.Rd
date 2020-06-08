@@ -26,6 +26,7 @@ plot_nelder_biculture_competition(data = dat.bi)
 }
 \seealso{
 Other plot functions: 
+\code{\link{plot_fitness_trajectory}()},
 \code{\link{plot_goelz}()},
 \code{\link{plot_nelder}()}
 }

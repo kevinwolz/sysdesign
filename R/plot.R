@@ -211,7 +211,7 @@ plot_nelder_biculture_competition <- function(data, plot = TRUE) {
                                     fill  = dens,
                                     label = dens)) +
     labs(x    = "Arc #",
-         y    = "Number of same-species neighbors",
+         y    = "Number of same-\nspecies neighbors",
          fill = "Number of\nindividuals") +
     scale_x_continuous(breaks = unique(plot.data$arc), expand = c(0,0)) +
     scale_y_continuous(breaks = 0:8, expand = c(0,0)) +
@@ -235,3 +235,54 @@ plot_nelder_biculture_competition <- function(data, plot = TRUE) {
 
   return(if(plot) plot.obj else plot.data)
 }
+
+#' Plot a diagnositc display of the fitness trajectory
+#' @description Plots a diagnositc display of the fitness trajectory from the genetic algorithm run by
+#' \code{\link{goelz_optim}} or \code{\link{nelder_biculture_optim}}.
+#' @return If \code{plot = TRUE}, returns a ggplot object, otherwise the data that would create the plot is returned.
+#' @param data An object of class 'goelz-optim' created via \code{\link{goelz_optim}} or
+#' 'nelder-optim' created via \code{\link{nelder_biculture_optim}}.
+#' @param plot If \code{TRUE}, the default, a ggplot object is returned.
+#' If \code{FALSE}, the data that would create the plot is returned.
+#' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
+#' @export
+#' @import ggplot2
+#' @importFrom dplyr %>%
+#' @family plot functions
+#' @examples
+#' dat <- nelder()
+#' dat.bi <- nelder_biculture(data = dat)
+#' dat.bi.optim <- nelder_biculture_optimr(data = dat.bi)
+#' plot_fitness_trajectory(data = dat.bi.optim)
+plot_fitness_trajectory <- function(data, plot = TRUE) {
+
+  if(!any(c("nelder-optim", "goelz-optim") %in% class(data))) {
+    stop("data must be of class nelder-optim or goelz-optim", call. = FALSE)
+  }
+
+    plot.data <- data$stats %>%
+      dplyr::group_by(gen) %>%
+      dplyr::summarize(fitness.mean = mean(fitness),
+                       fitness.min  = min(fitness),
+                       fitness.max  = max(fitness))
+
+    base_size <- 18
+
+    plot.obj <- ggplot(plot.data, aes(x = gen)) +
+      labs(x = "Generation",
+           y = "Fitness") +
+      geom_line(aes(y = fitness.mean), size = 2) +
+      geom_line(aes(y = fitness.min), linetype = "dashed") +
+      geom_line(aes(y = fitness.max), linetype = "dashed") +
+      theme_bw(base_size = base_size) +
+      theme(plot.margin       = unit(base_size * c(1,1,1,1), "points"),
+            panel.border      = element_rect(size = 2, color = "black"),
+            axis.text         = element_text(color = "black"),
+            axis.title.x      = element_text(vjust = -1),
+            axis.title.y      = element_text(vjust = 2),
+            axis.ticks        = element_line(color = "black"),
+            axis.ticks.length = unit(base_size * 0.25, "points"),
+            aspect.ratio      = 0.75)
+
+    return(if(plot) plot.obj else plot.data)
+  }

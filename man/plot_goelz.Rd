@@ -59,6 +59,7 @@ plot_goelz(data = dat)
 }
 \seealso{
 Other plot functions: 
+\code{\link{plot_fitness_trajectory}()},
 \code{\link{plot_nelder_biculture_competition}()},
 \code{\link{plot_nelder}()}
 }

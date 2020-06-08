@@ -47,6 +47,7 @@ plot_nelder(data = dat)
 }
 \seealso{
 Other plot functions: 
+\code{\link{plot_fitness_trajectory}()},
 \code{\link{plot_goelz}()},
 \code{\link{plot_nelder_biculture_competition}()}
 }
