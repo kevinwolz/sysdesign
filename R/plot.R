@@ -205,6 +205,11 @@ plot_nelder_biculture_competition <- function(data, plot = TRUE) {
                                    labels = c("Species A", "Species B")))
 
   base_size <- 18
+  top.dens <- plot.data$dens %>%
+    unique() %>%
+    sort() %>%
+    rev() %>%
+    .[1:ceiling(length(.) * 0.33)]
 
   plot.obj <- ggplot(plot.data, aes(x     = arc,
                                     y     = common.neighbors,
@@ -216,7 +221,7 @@ plot_nelder_biculture_competition <- function(data, plot = TRUE) {
     scale_x_continuous(breaks = unique(plot.data$arc), expand = c(0,0)) +
     scale_y_continuous(breaks = 0:8, expand = c(0,0)) +
     geom_raster(na.rm = TRUE) +
-    geom_text(aes(color = dens > 6)) +
+    geom_text(aes(color = dens %in% top.dens)) +
     facet_wrap(~species) +
     scale_fill_viridis_c(option = "magma") +
     scale_color_manual(values = c("white", "black")) +
