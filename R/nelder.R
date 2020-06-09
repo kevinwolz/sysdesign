@@ -602,10 +602,8 @@ nelder_fitness <- function(design, layout) {
     dplyr::right_join(complete.combos, by = c("species", "arc", "common.neighbors")) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(dens = tidyr::replace_na(dens, 0)) %>%
-    dplyr::group_by(species, arc) %>%
-    dplyr::summarize(stdev = sd(dens)) %>%
-    dplyr::ungroup() %>%
-    dplyr::summarize(fitness = mean(stdev)) %>%
+    dplyr::mutate(error = (dens - target)^2) %>%
+    dplyr::summarize(fitness = mean(error)) %>%
     as.numeric()
 
   return(out)
