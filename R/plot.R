@@ -213,7 +213,7 @@ plot_nelder_biculture_competition <- function(data, plot = TRUE) {
 
   plot.obj <- ggplot(plot.data, aes(x     = arc,
                                     y     = common.neighbors,
-                                    fill  = dens,
+                                    fill  = factor(dens),
                                     label = dens)) +
     labs(x    = "Arc #",
          y    = "Number of same-\nspecies neighbors",
@@ -223,7 +223,7 @@ plot_nelder_biculture_competition <- function(data, plot = TRUE) {
     geom_raster(na.rm = TRUE) +
     geom_text(aes(color = dens %in% top.dens)) +
     facet_wrap(~species) +
-    scale_fill_viridis_c(option = "magma") +
+    scale_fill_viridis_d(option = "magma") +
     scale_color_manual(values = c("white", "black")) +
     guides(color = FALSE) +
     coord_equal() +
