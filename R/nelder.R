@@ -586,10 +586,9 @@ nelder_fitness <- function(design, layout) {
   layout$plants <- layout$plants %>%
     dplyr::mutate(species = LETTERS[unlist(design)])
 
-  complete.combos <- expand.grid(species          = c("A", "B"),
-                                 arc              = 1:layout$plot$exp.arcs,
-                                 common.neighbors = 0:8) %>%
-    dplyr::as_tibble()
+  complete.combos <- tidyr::expand_grid(species          = c("A", "B"),
+                                        arc              = 1:layout$plot$exp.arcs,
+                                        common.neighbors = 0:8)
 
   out <- layout %>%
     nelder_biculture_competition() %>%
