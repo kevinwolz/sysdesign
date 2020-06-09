@@ -589,8 +589,10 @@ nelder_fitness <- function(design, layout) {
   layout$plants <- layout$plants %>%
     dplyr::mutate(species = LETTERS[unlist(design)])
 
-  complete.combos <- tidyr::expand_grid(species          = c("A", "B"),
-                                        arc              = 1:layout$plot$exp.arcs,
+  target <- layout$plot$exp.plants / 2 / layout$plot$exp.arcs / length(0:8)
+
+  complete.combos <- tidyr::expand_grid(species          = factor(c("A", "B")),
+                                        arc              = 2:(layout$plot$arcs - 1),
                                         common.neighbors = 0:8)
 
   out <- layout %>%
