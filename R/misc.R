@@ -98,7 +98,7 @@ run_ga <- function(control, population, layout, layout.comp, LAMBDA, MAX.GEN, P.
     readr::write_csv(GAout$stats, paste0(save.path, "/sysdesign_ga_stats.csv"), append = TRUE)
     readr::write_csv(GAout$data,  paste0(save.path, "/sysdesign_ga_data.csv"),  append = TRUE)
 
-    elapsedGen = round((proc.time()[3] - startGen) / 60)
+    elapsedGen = round((proc.time()[3] - startGen) / 60, 2)
     print(paste0("DONE WITH  GENERATION: ", GEN, " (", elapsedGen, " minutes)"))
   }
 
