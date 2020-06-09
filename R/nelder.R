@@ -111,6 +111,9 @@ nelder <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360, arc.border
     out <- c(orig.dat, list(even.optim = FALSE))
   }
 
+  if(abs(out$plot$non.centrality) > 25) warning("non-cenetrality (tau) eceeds 25% in this design, which is not recommended",
+                                                call. = FALSE)
+
   class(out) <- c(class(out), "nelder", "sysd")
   return(out)
 }
