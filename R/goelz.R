@@ -406,7 +406,8 @@ goelz_optim <- function(data,
                    P.RECOMB    = P.RECOMB,
                    RECOMB      = RECOMB,
                    P.MUT       = P.MUT,
-                   save.path   = save.path)
+                   save.path   = save.path,
+                   start.gen   = 1)
 
   OUT <- list(layout = TRIANGLE, stats = ga.out$pop.stats, data = ga.out$pop.data)
   class(OUT) <- c(class(OUT), "goelz-optim")

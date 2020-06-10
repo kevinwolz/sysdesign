@@ -35,9 +35,9 @@ the Goelz (2001) biculture version. For Nelder Fan designs with \code{max.angle 
 set to opposite poles of the circle, and the composition gradient occurs in two direction along either side of the
 circle in between. For Nelder Fan designs with \code{max angle < 360}, the composition gradient occurs in one
 direction between monoculture extremes at either edge of the design.
-This function does NOT robustly impose any conformity criterion to ensure that competition levels are tested evenly across
+This function does NOT robustly impose any conformity criterion to ensure that composition levels are tested evenly across
 all density levels. Species are assigned randomly to positions within each spoke of the design based on the probability of each
-species in that spoke. For a robust implementation of the competition-density conformity criterion that optimizes the rough
+species in that spoke. For a robust implementation of the composition-density conformity criterion that optimizes the rough
 initial approach of this function using an evolutionary algorithm, use \code{\link{nelder_biculture_optim}}.
 }
 \examples{

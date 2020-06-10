@@ -30,10 +30,11 @@ yard_to_feet_frac <- function(y) {
 #' @return A list containing fitness stats and population data.
 #' @author Kevin J Wolz, \email{kevin@@savannainstitute.org}
 #' @keywords internal
-run_ga <- function(control, population, layout, layout.comp, LAMBDA, MAX.GEN, P.RECOMB, RECOMB, P.MUT, save.path) {
+run_ga <- function(control, population, layout, layout.comp, LAMBDA, MAX.GEN, P.RECOMB, RECOMB, P.MUT, save.path, start.gen) {
 
   parallelMap::parallelRegisterLevels(package = "ecr",
-                                      levels = c("evaluateFitness", "generateOffspring", "computeDominanceRanking", "computeIndicators"))
+                                      levels  = c("evaluateFitness", "generateOffspring",
+                                                  "computeDominanceRanking", "computeIndicators"))
 
   control <- control %>%
     ecr::registerECROperator(slot = "recombine",
@@ -44,23 +45,29 @@ run_ga <- function(control, population, layout, layout.comp, LAMBDA, MAX.GEN, P.
     ecr::registerECROperator(slot = "selectForSurvival",
                              fun  = ecr::selGreedy)
 
-  GEN <- 1
-  init.fitness <- fitness <- ecr::evaluateFitness(control = control,
-                                                  inds    = population,
-                                                  layout  = layout)
-  init.population <- population <- annotate_pop(population = population,
-                                                fitness    = fitness,
-                                                gens       = rep(GEN, length(population)),
-                                                gen.ids    = paste(GEN, 1:length(population), sep = "-"))
+  GEN <- start.gen
+  print(paste("STARTING GENERATION:", GEN))
+  startGen <- proc.time()[3]
 
-  GAout <- compile_pop(population, fitness, layout = layout.comp, GEN = GEN)
+  fitness <- ecr::evaluateFitness(control = control,
+                                  inds    = population,
+                                  layout  = layout)
+  population <- annotate_pop(population = population,
+                             fitness    = fitness,
+                             gens       = rep(GEN, length(population)),
+                             gen.ids    = paste(GEN, 1:length(population), sep = "-"))
+
+  GAout <- compile_pop(pop = population, fit = fitness, layout = layout.comp, GEN = GEN)
   pop.stats <- GAout$stats
   pop.data  <- GAout$data
 
-  readr::write_csv(pop.stats, paste0(save.path, "/sysdesign_ga_stats.csv"))
-  readr::write_csv(pop.data,  paste0(save.path, "/sysdesign_ga_data.csv"))
+  readr::write_csv(pop.stats, paste0(save.path, "/sysdesign_ga_stats.csv"), append = (start.gen != 1))
+  readr::write_csv(pop.data,  paste0(save.path, "/sysdesign_ga_data.csv"),  append = (start.gen != 1))
 
-  for(GEN in 2:MAX.GEN) {
+  elapsedGen = round((proc.time()[3] - startGen) / 60, 2)
+  print(paste0("DONE WITH  GENERATION: ", GEN, " (", elapsedGen, " minutes)"))
+
+  for(GEN in (start.gen + 1):MAX.GEN) {
     print(paste("STARTING GENERATION:", GEN))
     startGen <- proc.time()[3]
 
@@ -91,7 +98,7 @@ run_ga <- function(control, population, layout, layout.comp, LAMBDA, MAX.GEN, P.
     fitness    <- sel$fitness
 
     ## SAVE DATA
-    GAout <- compile_pop(population, fitness, layout = layout.comp, GEN = GEN)
+    GAout <- compile_pop(pop = population, fit = fitness, layout = layout.comp, GEN = GEN)
     pop.stats <- dplyr::bind_rows(pop.stats, GAout$stats)
     pop.data  <- dplyr::bind_rows(pop.data,  GAout$data)
 
