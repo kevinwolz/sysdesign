@@ -181,9 +181,9 @@ nelder_decision <- function(DN, D1, N, tau = 1, even = FALSE, max.angle = 360, a
 #' set to opposite poles of the circle, and the composition gradient occurs in two direction along either side of the
 #' circle in between. For Nelder Fan designs with \code{max angle < 360}, the composition gradient occurs in one
 #' direction between monoculture extremes at either edge of the design.
-#' This function does NOT robustly impose any conformity criterion to ensure that competition levels are tested evenly across
+#' This function does NOT robustly impose any conformity criterion to ensure that composition levels are tested evenly across
 #' all density levels. Species are assigned randomly to positions within each spoke of the design based on the probability of each
-#' species in that spoke. For a robust implementation of the competition-density conformity criterion that optimizes the rough
+#' species in that spoke. For a robust implementation of the composition-density conformity criterion that optimizes the rough
 #' initial approach of this function using an evolutionary algorithm, use \code{\link{nelder_biculture_optim}}.
 #' @return An object of classes sysd, nelder, and nelder-biculture. This is a list of 5 elements,
 #' the first 3 of which are the same as for \code{\link{nelder}}, and the last 2 of which are:
@@ -246,13 +246,15 @@ nelder_biculture <- function(data, comps = NULL) {
   return(data)
 }
 
-#' Create a compeition-conformity-optimized Biculture Nelder Fan experimental design
+#' Create a composition-density-conformity-optimized Biculture Nelder Fan experimental design
 #' @description Creates a competition-conformity-optimized Biculture Nelder Fan experimental design.
-#' @details While \code{\link{nelder_biculture}} creates Biculture Nelder Fan designs that follow a composition-conformity criterion
-#' for species composition across spokes, this function creates designs that are optimized to also conform to a compeition-conformity
-#' criterion  for species competition environments across arcs using an evolutionary algorithm. Function parameters other than
-#' \code{data} are all controls on the evolutionary algorithm.
+#' @details While \code{\link{nelder_biculture}} creates Biculture Nelder Fan designs that follow a composition-conformity
+#' criterion across spokes, this function creates designs that are optimized to also conform to a composition-density-conformity
+#' criterion for species composition environments across arcs using an evolutionary algorithm. Function parameters other than
+#' \code{data}, \code{save.path}, and, \code{init.pop} are all controls on the evolutionary algorithm.
 #' The \code{\link{ecr}} package is used for the evolutionary algorithm.
+#' In addition to the data returned in the environment, the "stats" and "data" data frames are written as csv files
+#' to \code{save.path}.
 #' @return An list containing:
 #' \itemize{
 #'  \item{"layout"}{ - A data frame (tibble) containing the base nelder design.}
@@ -260,7 +262,11 @@ nelder_biculture <- function(data, comps = NULL) {
 #'  \item{"data"}{ - A data frame (tibble) containing the actual data (designs) of each Biculture Nelder Fan in eac generation.}
 #' }
 #' @param data An object of class nelder-biculture.
-#' @param save.path A character string indicating the path for where to save data after each generation.
+#' @param save.path A character string of the path for where to save data after each generation.
+#' @param init.pop If \code{NULL}, the default, then the initial population will be generated via \code{MU} calls
+#' to \code{\link{nelder}}. Otherwise, a character string of the path to the file containing the data from which to
+#' generate the initial population. This file should be the "data" output file that was saved by this function on a
+#' previous call. The iniital population will be taken as the final population in this file.
 #' @param MU The population size.
 #' @param LAMBDA The number of offspring to produce in each generation.
 #' @param MAX.GEN The number of generations to run the evolutionary algorithm.
@@ -278,6 +284,7 @@ nelder_biculture <- function(data, comps = NULL) {
 #' dat.bi.optim <- nelder_biculture_optim(data = dat.bi)
 nelder_biculture_optim <- function(data,
                                    save.path = ".",
+                                   init.pop  = NULL,
                                    MU        = 100,
                                    LAMBDA    = MU,
                                    MAX.GEN   = 150,
@@ -303,20 +310,46 @@ nelder_biculture_optim <- function(data,
   FAN <- data
   FAN$even.optim <- FAN$species.counts <- FAN$spoke.composition <- NULL
 
-  make_spoke_chromosomes <- function(x) {
-    x$plants %>%
-      dplyr::select(spoke, species) %>%
-      dplyr::mutate(species = match(species, LETTERS)) %>%
-      dplyr::group_by(spoke) %>%
+  if(!is.null(init.pop)) {
+    make_spoke_chromosomes_init <- function(x) {
+      x %>%
+        dplyr::group_by(spoke) %>%
+        tidyr::nest() %>%
+        .$data %>%
+        purrr::map("species")
+    }
+
+    print("READING INITIAL POPULATION:")
+    init.data <- readr::read_csv(init.pop, col_types = readr::cols())
+
+    last.gen <- max(init.data$gen)
+
+    population <- init.data %>%
+      dplyr::filter(gen == last.gen) %>%
+      dplyr::select(gen.id, spoke, species) %>%
+      dplyr::group_by(gen.id) %>%
       tidyr::nest() %>%
       .$data %>%
-      purrr::map("species")
-  }
+      purrr::map(make_spoke_chromosomes_init)
 
-  population <- purrr::map(rep(list(FAN), MU),
-                           assign_species,
-                           comps = data$spoke.composition$A.ratio) %>%
-    purrr::map(make_spoke_chromosomes)
+  } else {
+    make_spoke_chromosomes <- function(x) {
+      x$plants %>%
+        dplyr::select(spoke, species) %>%
+        dplyr::mutate(species = match(species, LETTERS)) %>%
+        dplyr::group_by(spoke) %>%
+        tidyr::nest() %>%
+        .$data %>%
+        purrr::map("species")
+    }
+
+    population <- purrr::map(rep(list(FAN), MU),
+                             sysdesign:::assign_species,
+                             comps = data$spoke.composition$A.ratio) %>%
+      purrr::map(make_spoke_chromosomes)
+
+    last.gen <- 0
+  }
 
   ## GA
   ga.out <- run_ga(control     = control,
@@ -328,7 +361,8 @@ nelder_biculture_optim <- function(data,
                    P.RECOMB    = P.RECOMB,
                    RECOMB      = RECOMB,
                    P.MUT       = P.MUT,
-                   save.path   = save.path)
+                   save.path   = save.path,
+                   start.gen   = last.gen + 1)
 
   OUT <- list(layout = data, stats = ga.out$pop.stats, data = ga.out$pop.data)
   class(OUT) <- c(class(OUT), "nelder-optim")
@@ -589,9 +623,9 @@ nelder_fitness <- function(design, layout) {
   layout$plants <- layout$plants %>%
     dplyr::mutate(species = LETTERS[unlist(design)])
 
-  target <- layout$plot$exp.plants / 2 / layout$plot$exp.arcs / length(0:8)
+  target <- layout$plot$exp.plants / (2 * layout$plot$exp.arcs * length(0:8))
 
-  complete.combos <- tidyr::expand_grid(species          = factor(c("A", "B")),
+  complete.combos <- tidyr::expand_grid(species          = c("A", "B"),
                                         arc              = 2:(layout$plot$arcs - 1),
                                         common.neighbors = 0:8)
 

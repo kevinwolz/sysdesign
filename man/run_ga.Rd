@@ -14,7 +14,8 @@ run_ga(
   P.RECOMB,
   RECOMB,
   P.MUT,
-  save.path
+  save.path,
+  start.gen
 )
 }
 \value{

@@ -2,11 +2,12 @@
 % Please edit documentation in R/nelder.R
 \name{nelder_biculture_optim}
 \alias{nelder_biculture_optim}
-\title{Create a compeition-conformity-optimized Biculture Nelder Fan experimental design}
+\title{Create a composition-density-conformity-optimized Biculture Nelder Fan experimental design}
 \usage{
 nelder_biculture_optim(
   data,
   save.path = ".",
+  init.pop = NULL,
   MU = 100,
   LAMBDA = MU,
   MAX.GEN = 150,
@@ -19,7 +20,12 @@ nelder_biculture_optim(
 \arguments{
 \item{data}{An object of class nelder-biculture.}
 
-\item{save.path}{A character string indicating the path for where to save data after each generation.}
+\item{save.path}{A character string of the path for where to save data after each generation.}
+
+\item{init.pop}{If \code{NULL}, the default, then the initial population will be generated via \code{MU} calls
+to \code{\link{nelder}}. Otherwise, a character string of the path to the file containing the data from which to
+generate the initial population. This file should be the "data" output file that was saved by this function on a
+previous call. The iniital population will be taken as the final population in this file.}
 
 \item{MU}{The population size.}
 
@@ -47,11 +53,13 @@ An list containing:
 Creates a competition-conformity-optimized Biculture Nelder Fan experimental design.
 }
 \details{
-While \code{\link{nelder_biculture}} creates Biculture Nelder Fan designs that follow a composition-conformity criterion
-for species composition across spokes, this function creates designs that are optimized to also conform to a compeition-conformity
-criterion  for species competition environments across arcs using an evolutionary algorithm. Function parameters other than
-\code{data} are all controls on the evolutionary algorithm.
+While \code{\link{nelder_biculture}} creates Biculture Nelder Fan designs that follow a composition-conformity
+criterion across spokes, this function creates designs that are optimized to also conform to a composition-density-conformity
+criterion for species composition environments across arcs using an evolutionary algorithm. Function parameters other than
+\code{data}, \code{save.path}, and, \code{init.pop} are all controls on the evolutionary algorithm.
 The \code{\link{ecr}} package is used for the evolutionary algorithm.
+In addition to the data returned in the environment, the "stats" and "data" data frames are written as csv files
+to \code{save.path}.
 }
 \examples{
 dat <- nelder()
