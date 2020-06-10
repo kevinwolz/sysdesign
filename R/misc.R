@@ -179,9 +179,9 @@ compile_pop <- function(pop, fit, layout, GEN) {
 
   data <- pop %>%
     purrr::map(matrix, ncol = 1) %>%
-    purrr::map(dplyr::as_tibble) %>%
+    purrr::map(dplyr::as_tibble, .name_repair = "minimal") %>%
     purrr::map(setNames, nm = "species") %>%
-    purrr::map(unnest) %>% # addition for Nelder
+    purrr::map(tidyr::unnest, cols = c(species)) %>% # addition for Nelder
     purrr::map(bind_layout, lay = layout) %>%
     dplyr::bind_rows() %>%
     dplyr::mutate(orig.gen = rep(orig.gen$orig.gen, each = nrow(layout))) %>%
